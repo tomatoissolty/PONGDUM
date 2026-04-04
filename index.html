@@ -37,25 +37,40 @@
             transition: background 0.5s ease;
         }
 
+        /* 클릭 개선: 버튼 내 모든 요소 터치 무시 */
+        button *, svg *, span * { pointer-events: none; }
+
         /* 헤더 */
         .header { padding: 30px 24px 10px; display: flex; justify-content: space-between; align-items: center; position: relative; }
-        .header .logo { position: absolute; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 700; color: var(--text-primary); cursor: pointer; }
+        .header .logo { 
+            position: absolute; left: 50%; transform: translateX(-50%); 
+            font-size: 22px; font-weight: 700; color: var(--text-primary); 
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .header .logo.active { transform: translateX(-50%) scale(0.9); opacity: 0.7; }
+
         .header-btn { width: 44px; height: 44px; border: none; background: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
         .header-btn svg { width: 22px; height: 22px; }
 
         .search-container { position: absolute; top: 80px; left: 24px; right: 24px; opacity: 0; pointer-events: none; transition: 0.4s; z-index: 100; }
         .search-container.show { opacity: 1; pointer-events: all; transform: translateY(10px); }
-        .search-input { width: 100%; padding: 16px 24px; border-radius: 20px; border: 1px solid var(--border-light); background: var(--card-bg); box-shadow: var(--shadow); outline: none; }
+        .search-input { width: 100%; padding: 16px 24px; border-radius: 20px; border: 1px solid var(--border-light); background: var(--card-bg); box-shadow: var(--shadow); outline: none; color: var(--text-primary); }
 
-        /* 카드 데크 */
-        .deck-container { position: relative; height: 460px; margin: 20px auto 0; max-width: 400px; perspective: 1000px; }
+        /* 카드 데크: 중앙 정렬 개선 */
+        .deck-container { position: relative; height: 460px; margin: 20px auto 0; max-width: 500px; display: flex; align-items: center; justify-content: center; }
+        .card-deck { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
         .card {
             position: absolute; width: 310px; height: 380px; background: var(--card-bg); border-radius: 32px; box-shadow: var(--shadow);
-            padding: 40px 30px; display: flex; flex-direction: column; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: grab; touch-action: none;
+            padding: 40px 30px; display: flex; flex-direction: column; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); cursor: grab; touch-action: none;
         }
-        .card.center { z-index: 5; transform: translateZ(0); opacity: 1; }
-        .card.left-1 { z-index: 4; transform: translateX(-110%) scale(0.85); opacity: 0.2; filter: blur(4px); }
-        .card.right-1 { z-index: 4; transform: translateX(110%) scale(0.85); opacity: 0.2; filter: blur(4px); }
+
+        /* 카드 중첩 레이아웃 (5장 표시) */
+        .card.center { z-index: 10; transform: translateX(0) scale(1); opacity: 1; }
+        .card.left-1 { z-index: 9; transform: translateX(-40px) scale(0.95); opacity: 0.6; }
+        .card.left-2 { z-index: 8; transform: translateX(-80px) scale(0.9); opacity: 0.3; }
+        .card.right-1 { z-index: 9; transform: translateX(40px) scale(0.95); opacity: 0.6; }
+        .card.right-2 { z-index: 8; transform: translateX(80px) scale(0.9); opacity: 0.3; }
 
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .card-indicators { display: flex; align-items: center; gap: 8px; }
@@ -66,40 +81,46 @@
 
         .card-content { font-size: 16px; line-height: 1.7; flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 500; }
         .card-time { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: 10px; opacity: 0.5; }
-        .card-counter { position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+        .card-counter { position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+
+        /* 수정 모드: 박스 테두리 제거 */
+        .card.editing textarea { 
+            width: 100%; height: 100%; border: none !important; background: transparent !important; 
+            font-size: 16px; text-align: center; outline: none !important; resize: none; 
+            box-shadow: none !important; color: var(--text-primary); font-family: inherit; font-weight: 500;
+        }
+        .edit-btn-container { position: absolute; bottom: 30px; left: 0; right: 0; padding: 0 30px; }
 
         /* 하단 폴더 섹션 */
         .folder-section { position: fixed; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; padding: 0 24px; gap: 10px; max-width: 500px; margin: 0 auto; }
-        
-        /* 폴더 슬라이더 (카드와 같은 스와이프 방식) */
         .folder-slider-wrap { flex: 1; height: 60px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .folder-deck { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        
         .folder-chip {
-            position: absolute; padding: 12px 20px; background: var(--card-bg); border-radius: 18px; 
-            font-size: 14px; font-weight: 700; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px;
+            position: absolute; padding: 12px 18px; background: var(--card-bg); border-radius: 18px; 
+            font-size: 13px; font-weight: 700; box-shadow: var(--shadow); display: flex; align-items: center; gap: 6px;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; cursor: pointer;
         }
-        .folder-chip.center { z-index: 5; background: var(--accent-color); color: white; opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
-        .folder-chip.side { z-index: 4; opacity: 0.4; filter: blur(2px); }
-        .folder-chip.left-1 { transform: translateX(-120px) scale(0.8); }
-        .folder-chip.right-1 { transform: translateX(120px) scale(0.8); }
-        .folder-chip.hidden { opacity: 0; pointer-events: none; }
+        .folder-chip.center { z-index: 5; background: var(--accent-color); color: white; opacity: 1; transform: translateX(0) scale(1); }
+        .folder-chip.side { z-index: 4; opacity: 0.4; filter: blur(1.5px); }
+        .folder-chip.left-1 { transform: translateX(-100px) scale(0.85); }
+        .folder-chip.right-1 { transform: translateX(100px) scale(0.85); }
 
         .f-btn { width: 50px; height: 50px; background: var(--card-bg); border: none; border-radius: 18px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--text-secondary); transition: 0.3s; }
         .f-btn.active { background: var(--accent-color); color: white; }
 
-        /* 별 토스트 */
-        .fav-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: rgba(255,255,255,0.7); backdrop-filter: blur(15px); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 3000; }
+        /* 피드백 UI */
+        .fav-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: rgba(255,255,255,0.7); backdrop-filter: blur(15px); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s; z-index: 3000; }
         .fav-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         .fav-toast svg { width: 45px; height: 45px; color: #FFD60A; }
 
-        /* 알림 토스트 */
         .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.8); color: white; padding: 14px 28px; border-radius: 20px; font-size: 14px; z-index: 2000; opacity: 0; transition: 0.4s; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         /* 팔레트 */
         .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
-        .color-dot { height: 35px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
+        .color-dot { height: 35px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
+        .color-dot:active { transform: scale(0.9); }
         .color-dot.selected { border-color: var(--text-primary); }
 
         /* 모달 */
@@ -107,6 +128,8 @@
         .modal.show { transform: translateY(0); }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 400; }
         .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+        .btn-main { width: 100%; padding: 18px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; background: var(--accent-color); color: white; margin-top: 10px; font-size: 16px; }
 
         .undo-bar { position: fixed; bottom: 120px; left: 24px; right: 24px; background: #2C2C2E; color: white; padding: 16px 24px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; z-index: 4000; transform: translateY(100px); opacity: 0; transition: 0.4s; }
         .undo-bar.show { transform: translateY(0); opacity: 1; }
@@ -151,19 +174,17 @@
     <div class="modal-overlay" id="overlay" onclick="closeAllModals()"></div>
     
     <div class="modal" id="menuModal">
-        <h3 style="margin-bottom:20px;">폴더 편집</h3>
         <div id="folderList"></div>
-        <button onclick="addNewFolder()" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--bg-color); font-weight:700; margin-top:10px;">+ 새 폴더</button>
+        <button class="btn-main" onclick="addNewFolder()" style="background:var(--bg-color); color:var(--text-primary);">+ 새 폴더</button>
         <div id="folderPalette" class="palette-grid"></div>
     </div>
 
     <div class="modal" id="settingsModal">
-        <h3 style="margin-bottom:20px;">테마 및 데이터</h3>
         <div id="colorPalette" class="palette-grid" style="margin-bottom:30px;"></div>
-        <button onclick="toggleDarkMode()" style="width:100%; padding:15px; border-radius:15px; border:1px solid var(--border-light); background:none; font-weight:700;">다크모드 전환</button>
-        <button onclick="exportAsText()" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--accent-color); color:white; font-weight:700; margin-top:10px;">텍스트로 저장</button>
-        <button onclick="exportData()" style="width:100%; padding:10px; border:none; background:none; color:var(--text-secondary); margin-top:20px;">동기화 데이터 내보내기</button>
-        <button onclick="importData()" style="width:100%; padding:10px; border:none; background:none; color:var(--text-secondary);">동기화 데이터 가져오기</button>
+        <button onclick="toggleDarkMode()" class="btn-main" style="background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-light);">다크모드 전환</button>
+        <button onclick="exportAsText()" class="btn-main">텍스트로 저장</button>
+        <button onclick="exportData()" class="btn-main" style="background:none; color:var(--text-secondary); margin-top:20px;">동기화 데이터 내보내기</button>
+        <button onclick="importData()" class="btn-main" style="background:none; color:var(--text-secondary); margin-top:0;">동기화 데이터 가져오기</button>
         <input type="file" id="importFile" accept=".json" style="display:none;" onchange="handleImport(event)">
     </div>
 
@@ -193,7 +214,7 @@
             renderFolders();
             renderCards();
             renderPalettes();
-            setupLogoDrag();
+            setupLogoAction();
         }
 
         function loadData() {
@@ -212,24 +233,26 @@
             localStorage.setItem('pongdum_accent', document.documentElement.style.getPropertyValue('--accent-color'));
         }
 
-        /* 카드 렌더링 */
+        /* 카드 렌더링 - 5장 중첩 구조 */
         function renderCards() {
             const deck = document.getElementById('cardDeck');
             const filtered = getFilteredIdeas();
-            deck.innerHTML = filtered.length === 0 ? `<div style="color:var(--text-secondary); text-align:center;">${isStoreMode ? '정리할 미분류 카드가 없습니다.' : '카드가 없습니다.'}</div>` : '';
+            deck.innerHTML = filtered.length === 0 ? `<div style="color:var(--text-secondary); text-align:center;">${isStoreMode ? '분류할 카드가 없습니다.' : '카드가 비어있습니다.'}</div>` : '';
             
-            for (let i = -1; i <= 1; i++) {
-                const idx = currentIndex + i;
+            const offsets = [-2, -1, 0, 1, 2];
+            offsets.forEach(off => {
+                const idx = currentIndex + off;
                 if (idx >= 0 && idx < filtered.length) {
-                    deck.appendChild(createCard(filtered[idx], i));
+                    deck.appendChild(createCard(filtered[idx], off));
                 }
-            }
+            });
             updateCounter();
         }
 
         function createCard(idea, offset) {
             const card = document.createElement('div');
-            card.className = `card ${offset === 0 ? 'center' : (offset < 0 ? 'left-1' : 'right-1')}`;
+            const classMap = { "-2": "left-2", "-1": "left-1", "0": "center", "1": "right-1", "2": "right-2" };
+            card.className = `card ${classMap[offset]}`;
             if (idea.favorite) card.classList.add('is-fav');
             
             const f = folders.find(f => f.id === idea.folder);
@@ -254,24 +277,25 @@
             return card;
         }
 
-        /* 폴더 렌더링 (스와이프 방식) */
+        /* 폴더 슬라이더 */
         function renderFolders() {
             const deck = document.getElementById('folderDeck');
             deck.innerHTML = '';
-            for (let i = -1; i <= 1; i++) {
-                const idx = currentFolderIdx + i;
+            const offsets = [-1, 0, 1];
+            offsets.forEach(off => {
+                const idx = currentFolderIdx + off;
                 if (idx >= 0 && idx < folders.length) {
                     const f = folders[idx];
                     const chip = document.createElement('div');
-                    chip.className = `folder-chip ${i === 0 ? 'center' : 'side'} ${i < 0 ? 'left-1' : (i > 0 ? 'right-1' : '')}`;
+                    chip.className = `folder-chip ${off === 0 ? 'center' : 'side'} ${off < 0 ? 'left-1' : (off > 0 ? 'right-1' : '')}`;
                     chip.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${f.color}"></span>${f.name}`;
-                    if (i === 0) chip.onmousedown = chip.ontouchstart = e => startFolderDrag(e, chip);
+                    if (off === 0) chip.onmousedown = chip.ontouchstart = e => startFolderDrag(e, chip);
                     deck.appendChild(chip);
                 }
-            }
+            });
         }
 
-        /* 드래그 로직 (카드) */
+        /* 드래그 & 인터랙션 */
         function startDrag(e, card, idea) {
             isDragging = true; dragTime = Date.now();
             const pt = e.touches ? e.touches[0] : e;
@@ -284,7 +308,7 @@
                 
                 const t = document.getElementById('toast');
                 if (Math.abs(currentY) > 80) {
-                    t.textContent = currentY < 0 ? '🗑️ 던져서 삭제' : (isStoreMode ? `💾 ${folders[currentFolderIdx].name} 폴더에 저장` : '💾 당겨서 저장');
+                    t.textContent = currentY < 0 ? '🗑️ 삭제하기' : (isStoreMode ? `💾 ${folders[currentFolderIdx].name} 폴더에 분류` : '💾 저장하기');
                     t.classList.add('show');
                 } else t.classList.remove('show');
             };
@@ -294,15 +318,12 @@
                 document.getElementById('toast').classList.remove('show');
                 const duration = Date.now() - dragTime;
 
-                if (duration < 200 && Math.abs(currentX) < 5 && Math.abs(currentY) < 5) {
+                if (duration < 200 && Math.abs(currentX) < 10 && Math.abs(currentY) < 10) {
                     toggleFavorite(idea);
                 } else {
-                    if (Math.abs(currentX) > 100) navigateCard(currentX > 0 ? -1 : 1);
+                    if (Math.abs(currentX) > 120) navigateCard(currentX > 0 ? -1 : 1);
                     else if (currentY < -100) deleteIdea(idea);
-                    else if (currentY > 100) {
-                        if (isStoreMode) saveToFolderInStoreMode(idea);
-                        else saveToFolder(idea);
-                    }
+                    else if (currentY > 100) isStoreMode ? saveInStoreMode(idea) : saveIdea(idea);
                 }
                 card.style.transition = '0.5s'; card.style.transform = '';
                 setTimeout(() => card.style.transition = '', 500);
@@ -310,19 +331,16 @@
             };
         }
 
-        /* 폴더 스와이프 드래그 로직 */
         function startFolderDrag(e, chip) {
             let fStartX = (e.touches ? e.touches[0] : e).clientX;
             let fCurrentX = 0;
-
             document.onmousemove = document.ontouchmove = me => {
                 fCurrentX = ((me.touches ? me.touches[0] : me).clientX) - fStartX;
                 chip.style.transform = `translateX(${fCurrentX}px)`;
             };
-
             document.onmouseup = document.ontouchend = () => {
                 document.onmousemove = document.ontouchmove = null;
-                if (Math.abs(fCurrentX) > 50) navigateFolder(fCurrentX > 0 ? -1 : 1);
+                if (Math.abs(fCurrentX) > 60) navigateFolder(fCurrentX > 0 ? -1 : 1);
                 chip.style.transform = '';
             };
         }
@@ -330,51 +348,30 @@
         function navigateFolder(d) {
             const next = currentFolderIdx + d;
             if (next >= 0 && next < folders.length) {
-                currentFolderIdx = next;
-                currentIndex = 0;
+                currentFolderIdx = next; currentIndex = 0;
                 renderFolders(); renderCards();
             }
         }
 
         function toggleStoreMode() {
             isStoreMode = !isStoreMode;
-            const btn = document.getElementById('storeModeBtn');
-            btn.classList.toggle('active', isStoreMode);
-            currentIndex = 0;
-            showToast(isStoreMode ? "정리 모드: 미분류 카드만 표시됩니다." : "일반 모드");
-            renderCards();
+            document.getElementById('storeModeBtn').classList.toggle('active', isStoreMode);
+            currentIndex = 0; renderCards();
+            showToast(isStoreMode ? "정리 모드 활성화" : "일반 모드");
         }
 
-        function getFilteredIdeas() {
-            let list = isStoreMode ? ideas.filter(i => i.folder === 'uncategorized') : ideas;
-            if (!isStoreMode) {
-                const f = folders[currentFolderIdx];
-                if (f.id === 'favorites') list = ideas.filter(i => i.favorite);
-                else if (f.id !== 'all') list = ideas.filter(i => i.folder === f.id);
-            }
-            if (searchTerm) list = list.filter(i => i.content.toLowerCase().includes(searchTerm.toLowerCase()));
-            return list;
+        function saveInStoreMode(idea) {
+            const f = folders[currentFolderIdx];
+            if (f.locked) { showToast("이 폴더에는 분류할 수 없습니다."); return; }
+            idea.folder = f.id; saveData(); renderCards();
+            showToast(`"${f.name}" 분류 완료`);
         }
 
-        function saveToFolderInStoreMode(idea) {
-            const folder = folders[currentFolderIdx];
-            if (folder.id === 'all' || folder.id === 'favorites' || folder.id === 'uncategorized') {
-                showToast("일반 폴더를 선택해주세요.");
-                return;
-            }
-            idea.folder = folder.id;
-            saveData();
-            // 화면에서 즉시 사라지게 하기 위해 currentIndex 조정 없이 렌더링
-            renderCards();
-            showToast(`"${folder.name}" 폴더에 저장되었습니다.`);
-        }
-
-        function saveToFolder(idea) {
-            const folder = folders[currentFolderIdx];
-            if (folder.locked) { showToast("저장 가능한 폴더가 아닙니다."); return; }
-            idea.folder = folder.id;
-            saveData(); renderCards();
-            showToast(`"${folder.name}" 저장 완료`);
+        function saveIdea(idea) {
+            const f = folders[currentFolderIdx];
+            if (f.locked) { showToast("폴더를 선택해주세요."); return; }
+            idea.folder = f.id; saveData(); renderCards();
+            showToast(`"${f.name}" 저장됨`);
         }
 
         function toggleFavorite(idea) {
@@ -405,10 +402,17 @@
             }
         }
 
+        /* 수정 모드 및 새 카드 */
         function startEdit(id) {
             const idea = ideas.find(i => i.id === id);
             const deck = document.getElementById('cardDeck');
-            deck.innerHTML = `<div class="card center editing"><textarea id="editArea">${idea.content}</textarea><button onclick="finishEdit(${id})" class="btn-main" style="background:var(--accent-color); color:white; border:none; padding:15px; border-radius:15px; margin-top:10px; font-weight:700;">수정 완료</button></div>`;
+            deck.innerHTML = `
+                <div class="card center editing">
+                    <textarea id="editArea" placeholder="내용을 입력하세요...">${idea.content}</textarea>
+                    <div class="edit-btn-container">
+                        <button onclick="finishEdit(${id})" class="btn-main">수정 완료</button>
+                    </div>
+                </div>`;
             document.getElementById('editArea').focus();
         }
 
@@ -417,29 +421,39 @@
             if (val) { ideas.find(i => i.id === id).content = val; saveData(); renderCards(); }
         }
 
-        function setupLogoDrag() {
+        function setupLogoAction() {
             const logo = document.getElementById('mainLogo');
-            logo.draggable = true;
-            logo.addEventListener('dragend', () => {
-                if (isStoreMode) { showToast("일반 모드에서만 새 카드를 만들 수 있습니다."); return; }
-                const n = { id: Date.now(), content: '', folder: 'uncategorized', favorite: false, createdAt: new Date().toISOString() };
-                ideas.unshift(n); currentIndex = 0; saveData(); renderCards(); startEdit(n.id);
+            let isLogoDragging = false;
+            logo.onmousedown = logo.ontouchstart = () => {
+                isLogoDragging = true;
+                logo.classList.add('active');
+            };
+            window.addEventListener('mouseup', () => {
+                if (isLogoDragging) {
+                    isLogoDragging = false;
+                    logo.classList.remove('active');
+                    const n = { id: Date.now(), content: '', folder: 'uncategorized', favorite: false, createdAt: new Date().toISOString() };
+                    ideas.unshift(n); currentIndex = 0; saveData(); renderCards(); startEdit(n.id);
+                }
             });
         }
 
+        /* 폴더 편집 및 팔레트 */
         function renderPalettes() {
             const fP = document.getElementById('folderPalette');
             fP.innerHTML = allColors.map(c => `<div class="color-dot" style="background:${c}" onclick="setFolderColor('${c}')"></div>`).join('');
-            
             const aP = document.getElementById('colorPalette');
             aP.innerHTML = allColors.map(c => `<div class="color-dot" style="background:${c}" onclick="setAccent('${c}')"></div>`).join('');
         }
 
         function setFolderColor(c) {
             if (selectedFolderToEdit) {
-                folders.find(f => f.id === selectedFolderToEdit).color = c;
-                saveData(); renderFolderList(); renderFolders(); renderCards();
-            }
+                const folder = folders.find(f => f.id === selectedFolderToEdit);
+                if (folder) {
+                    folder.color = c;
+                    saveData(); renderFolderList(); renderFolders(); renderCards();
+                }
+            } else { showToast("색상을 바꿀 폴더를 리스트에서 먼저 선택하세요."); }
         }
 
         function setAccent(c) {
@@ -449,10 +463,10 @@
 
         function renderFolderList() {
             document.getElementById('folderList').innerHTML = folders.filter(f => !f.locked).map(f => `
-                <div style="display:flex; align-items:center; gap:10px; padding:15px; background:var(--bg-color); border-radius:15px; margin-bottom:10px; border:${selectedFolderToEdit===f.id?'2px solid var(--accent-color)':'none'}" onclick="selectedFolderToEdit='${f.id}'; renderFolderList();">
-                    <div style="width:15px; height:15px; border-radius:50%; background:${f.color}"></div>
-                    <input type="text" value="${f.name}" onchange="updateFolderName('${f.id}', this.value)" style="flex:1; border:none; background:none; outline:none;">
-                    <button onclick="deleteFolder('${f.id}')" style="border:none; background:none; color:red;">삭제</button>
+                <div style="display:flex; align-items:center; gap:10px; padding:15px; background:var(--bg-color); border-radius:18px; margin-bottom:10px; border:${selectedFolderToEdit===f.id?'2px solid var(--accent-color)':'none'}" onclick="selectedFolderToEdit='${f.id}'; renderFolderList();">
+                    <div style="width:18px; height:18px; border-radius:50%; background:${f.color}"></div>
+                    <input type="text" value="${f.name}" onchange="updateFolderName('${f.id}', this.value)" style="flex:1; border:none; background:none; outline:none; font-weight:600;">
+                    <button onclick="deleteFolder('${f.id}')" style="border:none; background:none; color:#FF3B30; font-weight:700;">삭제</button>
                 </div>
             `).join('');
         }
@@ -461,6 +475,7 @@
         function addNewFolder() { folders.push({ id: 'f'+Date.now(), name: '새 폴더', color: vividColors[0], locked: false }); saveData(); renderFolderList(); renderFolders(); }
         function deleteFolder(id) { if(confirm('삭제할까요?')) { folders = folders.filter(f => f.id !== id); saveData(); renderFolderList(); renderFolders(); } }
 
+        /* 기타 */
         function openMenu() { selectedFolderToEdit = null; renderFolderList(); document.getElementById('overlay').classList.add('show'); document.getElementById('menuModal').classList.add('show'); }
         function openSettings() { document.getElementById('overlay').classList.add('show'); document.getElementById('settingsModal').classList.add('show'); }
         function closeAllModals() { document.querySelectorAll('.modal, .modal-overlay').forEach(el => el.classList.remove('show')); }
@@ -471,11 +486,33 @@
         function updateCounter() { const f = getFilteredIdeas(); const c = f.length > 0 ? currentIndex + 1 : 0; document.getElementById('cardCounter').textContent = `${c.toString().padStart(2, '0')} / ${f.length.toString().padStart(2, '0')}`; }
         function navigateCard(d) { const f = getFilteredIdeas(); const n = currentIndex + d; if (n >= 0 && n < f.length) { currentIndex = n; renderCards(); } }
 
-        /* 데이터 내보내기/가져오기 */
+        function getFilteredIdeas() {
+            let list = isStoreMode ? ideas.filter(i => i.folder === 'uncategorized') : ideas;
+            if (!isStoreMode) {
+                const f = folders[currentFolderIdx];
+                if (f.id === 'favorites') list = ideas.filter(i => i.favorite);
+                else if (f.id !== 'all') list = ideas.filter(i => i.folder === f.id);
+            }
+            if (searchTerm) list = list.filter(i => i.content.toLowerCase().includes(searchTerm.toLowerCase()));
+            return list;
+        }
+
         function exportAsText() { let t = ideas.map(i => `[${folders.find(f=>f.id===i.folder)?.name || '미분류'}] ${i.content}`).join('\n'); const b = new Blob([t], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pongdum.txt'; a.click(); }
         function exportData() { const b = new Blob([JSON.stringify({ideas, folders})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pongdum_backup.json'; a.click(); }
         function importData() { document.getElementById('importFile').click(); }
-        function handleImport(e) { const r = new FileReader(); r.onload = ev => { const d = JSON.parse(ev.target.result); ideas = d.ideas; folders = d.folders; saveData(); location.reload(); }; r.readAsText(e.target.files[0]); }
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const d = JSON.parse(ev.target.result);
+                    ideas = d.ideas || []; folders = d.folders || folders;
+                    saveData(); location.reload();
+                } catch(e) { showToast("잘못된 파일 형식입니다."); }
+            };
+            reader.readAsText(file);
+        }
 
         init();
     </script>
