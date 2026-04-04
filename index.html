@@ -37,23 +37,34 @@
             transition: background 0.5s ease;
         }
 
-        button *, svg *, span * { pointer-events: none; }
+        /* 클릭 개선: 자식 요소는 터치를 방해하지 않음 */
+        button *, svg *, span *, div * { pointer-events: none; }
+        .edit-trigger, .header-btn, .f-btn, .logo, .folder-chip { pointer-events: auto !important; }
 
-        .header { padding: 30px 24px 10px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        /* 헤더 터치 영역 강화 */
+        .header { padding: 30px 10px 10px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        
         .header .logo { 
             position: absolute; left: 50%; transform: translateX(-50%); 
             font-size: 22px; font-weight: 700; color: var(--text-primary); 
             cursor: pointer; transition: transform 0.2s;
+            padding: 15px 30px; /* 로고 주변 터치 영역 확대 */
+            display: flex; align-items: center; justify-content: center;
         }
         .header .logo.active { transform: translateX(-50%) scale(0.9); opacity: 0.7; }
 
-        .header-btn { width: 44px; height: 44px; border: none; background: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+        .header-btn { 
+            width: 60px; height: 60px; /* 클릭 영역 확대 */
+            border: none; background: none; cursor: pointer; color: var(--text-secondary); 
+            display: flex; align-items: center; justify-content: center; 
+        }
         .header-btn svg { width: 22px; height: 22px; }
 
-        .search-container { position: absolute; top: 80px; left: 24px; right: 24px; opacity: 0; pointer-events: none; transition: 0.4s; z-index: 100; }
+        .search-container { position: absolute; top: 85px; left: 24px; right: 24px; opacity: 0; pointer-events: none; transition: 0.4s; z-index: 100; }
         .search-container.show { opacity: 1; pointer-events: all; transform: translateY(10px); }
         .search-input { width: 100%; padding: 16px 24px; border-radius: 20px; border: 1px solid var(--border-light); background: var(--card-bg); box-shadow: var(--shadow); outline: none; color: var(--text-primary); }
 
+        /* 카드 레이아웃 */
         .deck-container { position: relative; height: 460px; margin: 20px auto 0; max-width: 500px; display: flex; align-items: center; justify-content: center; }
         .card-deck { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         
@@ -74,46 +85,58 @@
         .star-icon { color: #FFD60A; display: none; width: 18px; }
         .card.is-fav .star-icon { display: block; }
         
-        /* 2. 수정 버튼 영역 확장 */
         .edit-trigger { 
             color: var(--border-light); cursor: pointer; 
-            width: 44px; height: 44px; /* 터치 영역 확대 */
+            width: 50px; height: 50px; /* 수정 버튼 터치 영역 대폭 확대 */
             display: flex; align-items: center; justify-content: center;
-            margin-top: -12px; margin-right: -12px; /* 패딩만큼 보정 */
+            margin-top: -15px; margin-right: -15px; 
             transition: color 0.2s;
-            pointer-events: auto !important; /* 클릭 우선순위 확보 */
+            z-index: 20;
         }
-        .edit-trigger svg { width: 20px; height: 20px; pointer-events: none; }
-        .edit-trigger:hover { color: var(--accent-color); }
+        .edit-trigger svg { width: 20px; height: 20px; }
 
         .card-content { font-size: 16px; line-height: 1.7; flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 500; }
         .card-time { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: 10px; opacity: 0.5; }
         .card-counter { position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text-secondary); font-weight: 600; }
 
+        /* 수정 모드 & DONE 버튼 슬림화 */
         .card.editing textarea { 
             width: 100%; height: 100%; border: none !important; background: transparent !important; 
             font-size: 16px; text-align: center; outline: none !important; resize: none; 
             box-shadow: none !important; color: var(--text-primary); font-family: inherit; font-weight: 500;
         }
-        .edit-btn-container { position: absolute; bottom: 30px; left: 0; right: 0; padding: 0 30px; }
+        .edit-btn-container { 
+            position: absolute; bottom: 30px; left: 0; right: 0; 
+            display: flex; justify-content: center; /* 버튼 중앙 정렬 */
+        }
+        .btn-done { 
+            width: 50px; height: 50px; border-radius: 18px; border: none; 
+            font-weight: 800; font-size: 10px; cursor: pointer; 
+            background: var(--accent-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow);
+        }
 
-        .folder-section { position: fixed; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; padding: 0 24px; gap: 10px; max-width: 500px; margin: 0 auto; }
-        .folder-slider-wrap { flex: 1; height: 60px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        /* 하단 터치 영역 강화 */
+        .folder-section { position: fixed; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; padding: 0 15px; gap: 5px; max-width: 500px; margin: 0 auto; }
+        .folder-slider-wrap { flex: 1; height: 80px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .folder-deck { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         
         .folder-chip {
-            position: absolute; padding: 12px 18px; background: var(--card-bg); border-radius: 18px; 
-            font-size: 13px; font-weight: 700; box-shadow: var(--shadow); display: flex; align-items: center; gap: 6px;
+            position: absolute; padding: 12px 16px; background: var(--card-bg); border-radius: 18px; 
+            font-size: 12px; font-weight: 700; box-shadow: var(--shadow); display: flex; align-items: center; gap: 6px;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; cursor: pointer;
         }
+        /* 폴더 간격 반으로 줄임 (100px -> 55px) */
         .folder-chip.center { z-index: 5; background: var(--accent-color); color: white; opacity: 1; transform: translateX(0) scale(1); }
-        .folder-chip.side { z-index: 4; opacity: 0.4; filter: blur(1.5px); }
-        .folder-chip.left-1 { transform: translateX(-100px) scale(0.85); }
-        .folder-chip.right-1 { transform: translateX(100px) scale(0.85); }
+        .folder-chip.side { z-index: 4; opacity: 0.3; filter: blur(1.5px); }
+        .folder-chip.left-1 { transform: translateX(-55px) scale(0.85); }
+        .folder-chip.right-1 { transform: translateX(55px) scale(0.85); }
 
-        .f-btn { width: 50px; height: 50px; background: var(--card-bg); border: none; border-radius: 18px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--text-secondary); transition: 0.3s; }
+        .f-btn { width: 55px; height: 55px; background: var(--card-bg); border: none; border-radius: 18px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--text-secondary); }
         .f-btn.active { background: var(--accent-color); color: white; }
 
+        /* 피드백 UI */
         .fav-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: rgba(255,255,255,0.7); backdrop-filter: blur(15px); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s; z-index: 3000; }
         .fav-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         .fav-toast svg { width: 45px; height: 45px; color: #FFD60A; }
@@ -122,8 +145,7 @@
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
-        .color-dot { height: 35px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
-        .color-dot:active { transform: scale(0.9); }
+        .color-dot { height: 35px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
         .color-dot.selected { border-color: var(--text-primary); }
 
         .modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-radius: 35px 35px 0 0; padding: 40px 30px; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); z-index: 500; }
@@ -296,7 +318,6 @@
         }
 
         function startDrag(e, card, idea) {
-            // 수정 버튼 클릭 시 드래그 방지
             if (e.target.closest('.edit-trigger')) return;
 
             isDragging = true; dragTime = Date.now();
@@ -310,7 +331,6 @@
                 
                 const t = document.getElementById('toast');
                 if (Math.abs(currentY) > 80) {
-                    // 4. 특정 폴더 내부에서 아래로 당길 때 텍스트 변경
                     const f = folders[currentFolderIdx];
                     const isSpecificFolder = !f.locked;
                     t.textContent = currentY < 0 ? '🗑️ 삭제하기' : (isStoreMode ? `💾 ${f.name} 폴더에 분류` : (isSpecificFolder ? '🔓 저장 취소' : '💾 저장하기'));
@@ -323,16 +343,15 @@
                 document.getElementById('toast').classList.remove('show');
                 const duration = Date.now() - dragTime;
 
-                if (duration < 200 && Math.abs(currentX) < 10 && Math.abs(currentY) < 10) {
+                if (duration < 250 && Math.abs(currentX) < 15 && Math.abs(currentY) < 15) {
                     toggleFavorite(idea);
                 } else {
                     if (Math.abs(currentX) > 120) navigateCard(currentX > 0 ? -1 : 1);
                     else if (currentY < -100) deleteIdea(idea);
                     else if (currentY > 100) {
-                        // 4. 저장 취소 로직 포함
                         const f = folders[currentFolderIdx];
                         if (isStoreMode) saveInStoreMode(idea);
-                        else if (!f.locked) unclassifyIdea(idea); // 특정 폴더 내부면 저장 취소
+                        else if (!f.locked) unclassifyIdea(idea);
                         else saveIdea(idea);
                     }
                 }
@@ -351,7 +370,7 @@
             };
             document.onmouseup = document.ontouchend = () => {
                 document.onmousemove = document.ontouchmove = null;
-                if (Math.abs(fCurrentX) > 60) navigateFolder(fCurrentX > 0 ? -1 : 1);
+                if (Math.abs(fCurrentX) > 40) navigateFolder(fCurrentX > 0 ? -1 : 1);
                 chip.style.transform = '';
             };
         }
@@ -385,7 +404,6 @@
             showToast(`"${f.name}" 저장됨`);
         }
 
-        // 4. 저장 취소 (미분류로 이동)
         function unclassifyIdea(idea) {
             idea.folder = 'uncategorized';
             saveData(); renderCards();
@@ -427,7 +445,7 @@
                 <div class="card center editing">
                     <textarea id="editArea" placeholder="내용을 입력하세요...">${idea.content}</textarea>
                     <div class="edit-btn-container">
-                        <button onclick="finishEdit(${id})" class="btn-main">DONE</button>
+                        <button onclick="finishEdit(${id})" class="btn-done">DONE</button>
                     </div>
                 </div>`;
             document.getElementById('editArea').focus();
@@ -449,28 +467,17 @@
                 if (isLogoDragging) {
                     isLogoDragging = false;
                     logo.classList.remove('active');
-                    
-                    // 3. 특정 폴더 보고 있을 때 해당 폴더 자동 지정
                     const currentF = folders[currentFolderIdx];
                     const initialFolder = (!currentF.locked) ? currentF.id : 'uncategorized';
-                    
-                    const n = { 
-                        id: Date.now(), 
-                        content: '', 
-                        folder: initialFolder, 
-                        favorite: false, 
-                        createdAt: new Date().toISOString() 
-                    };
+                    const n = { id: Date.now(), content: '', folder: initialFolder, favorite: false, createdAt: new Date().toISOString() };
                     ideas.unshift(n); currentIndex = 0; saveData(); renderCards(); startEdit(n.id);
                 }
             });
         }
 
         function renderPalettes() {
-            const fP = document.getElementById('folderPalette');
-            fP.innerHTML = allColors.map(c => `<div class="color-dot" style="background:${c}" onclick="setFolderColor('${c}')"></div>`).join('');
-            const aP = document.getElementById('colorPalette');
-            aP.innerHTML = allColors.map(c => `<div class="color-dot" style="background:${c}" onclick="setAccent('${c}')"></div>`).join('');
+            document.getElementById('folderPalette').innerHTML = allColors.map(c => `<div class="color-dot" style="background:${c}" onclick="setFolderColor('${c}')"></div>`).join('');
+            document.getElementById('colorPalette').innerHTML = allColors.map(c => `<div class="color-dot" style="background:${c}" onclick="setAccent('${c}')"></div>`).join('');
         }
 
         function setFolderColor(c) {
@@ -480,20 +487,17 @@
                     folder.color = c;
                     saveData(); renderFolderList(); renderFolders(); renderCards();
                 }
-            } else { showToast("색상을 바꿀 폴더를 리스트에서 먼저 선택하세요."); }
+            } else { showToast("색상을 바꿀 폴더를 선택하세요."); }
         }
 
-        function setAccent(c) {
-            document.documentElement.style.setProperty('--accent-color', c);
-            saveData(); renderFolders();
-        }
+        function setAccent(c) { document.documentElement.style.setProperty('--accent-color', c); saveData(); renderFolders(); }
 
         function renderFolderList() {
             document.getElementById('folderList').innerHTML = folders.filter(f => !f.locked).map(f => `
                 <div style="display:flex; align-items:center; gap:10px; padding:15px; background:var(--bg-color); border-radius:18px; margin-bottom:10px; border:${selectedFolderToEdit===f.id?'2px solid var(--accent-color)':'none'}" onclick="selectedFolderToEdit='${f.id}'; renderFolderList();">
                     <div style="width:18px; height:18px; border-radius:50%; background:${f.color}"></div>
                     <input type="text" value="${f.name}" onchange="updateFolderName('${f.id}', this.value)" style="flex:1; border:none; background:none; outline:none; font-weight:600;">
-                    <button onclick="deleteFolder('${f.id}')" style="border:none; background:none; color:#FF3B30; font-weight:700;">삭제</button>
+                    <button onclick="deleteFolder('${f.id}')" style="border:none; background:none; color:#FF3B30; font-weight:700; padding:10px;">삭제</button>
                 </div>
             `).join('');
         }
@@ -510,8 +514,6 @@
         function toggleDarkMode() { document.body.classList.toggle('dark-mode'); saveData(); }
         function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
         function updateCounter() { const f = getFilteredIdeas(); const c = f.length > 0 ? currentIndex + 1 : 0; document.getElementById('cardCounter').textContent = `${c.toString().padStart(2, '0')} / ${f.length.toString().padStart(2, '0')}`; }
-        function navigateCard(d) { const f = getFilteredIdeas(); const n = currentIndex + d; if (n >= 0 && n < f.length) { currentIndex = n; renderCards(); } }
-
         function getFilteredIdeas() {
             let list = isStoreMode ? ideas.filter(i => i.folder === 'uncategorized') : ideas;
             if (!isStoreMode) {
@@ -527,8 +529,7 @@
         function exportData() { const b = new Blob([JSON.stringify({ideas, folders})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pongdum_backup.json'; a.click(); }
         function importData() { document.getElementById('importFile').click(); }
         function handleImport(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = ev => {
                 try {
