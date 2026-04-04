@@ -128,7 +128,7 @@
         <button class="header-btn clickable" onclick="toggleSearch()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </button>
-        <div class="logo" id="mainLogo">PONGDUM</div>
+        <div class="logo clickable" id="mainLogo">PONGDUM</div>
         <button class="header-btn clickable" onclick="openSettings()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
         </button>
@@ -180,7 +180,7 @@
         ];
         let currentIndex = 0, currentFolderIdx = 0, isStoreMode = false;
         let isDragging = false, startX, startY, currentX = 0, currentY = 0, dragTime;
-        let searchTerm = "", selectedFolderToEdit = null, lastDeletedIdea = null;
+        let searchTerm = "", selectedFolderToEdit = null, lastDeletedIdea = null, undoTimeout = null;
 
         const vividColors = ['#FF3B30', '#FF9500', '#34C759', '#007AFF', '#AF52DE'];
         const pastelColors = ['#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA', '#E0BBE4'];
@@ -248,15 +248,23 @@
         function renderFolders() {
             const deck = document.getElementById('folderDeck');
             deck.innerHTML = '';
+            
+            // 1. 폴더 수정모드(정리 모드) 시 시스템 폴더(전체, 미분류, 즐겨찾기) 제외 필터링
+            const displayFolders = isStoreMode 
+                ? folders.filter(f => !f.locked && f.id !== 'uncategorized')
+                : folders;
+
+            if (currentFolderIdx >= displayFolders.length) currentFolderIdx = 0;
+
             const offsets = [-1, 0, 1];
             offsets.forEach(off => {
                 const idx = currentFolderIdx + off;
-                if (idx >= 0 && idx < folders.length) {
-                    const f = folders[idx];
+                if (idx >= 0 && idx < displayFolders.length) {
+                    const f = displayFolders[idx];
                     const chip = document.createElement('div');
                     chip.className = `folder-chip ${off === 0 ? 'center' : 'side'} ${off < 0 ? 'left-1' : (off > 0 ? 'right-1' : '')} clickable`;
                     chip.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${f.color}"></span>${f.name}`;
-                    if (off === 0) chip.onmousedown = chip.ontouchstart = e => startFolderDrag(e, chip);
+                    if (off === 0) chip.onmousedown = chip.ontouchstart = e => startFolderDrag(e, chip, displayFolders.length);
                     deck.appendChild(chip);
                 }
             });
@@ -273,8 +281,10 @@
                 card.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${currentX * 0.03}deg)`;
                 const t = document.getElementById('toast');
                 if (Math.abs(currentY) > 80) {
-                    const f = folders[currentFolderIdx];
-                    t.textContent = currentY < 0 ? '🗑️ 삭제하기' : (isStoreMode ? `💾 ${f.name} 분류` : (!f.locked ? '🔓 저장 취소' : '💾 저장하기'));
+                    // 정리 모드일 때 필터링된 폴더 리스트 기준으로 타겟 폴더 이름 획득
+                    const displayFolders = isStoreMode ? folders.filter(f => !f.locked && f.id !== 'uncategorized') : folders;
+                    const f = displayFolders[currentFolderIdx];
+                    t.textContent = currentY < 0 ? '🗑️ 삭제하기' : (isStoreMode ? `💾 ${f.name} 분류` : (!folders[currentFolderIdx].locked ? '🔓 저장 취소' : '💾 저장하기'));
                     t.classList.add('show');
                 } else t.classList.remove('show');
             };
@@ -287,9 +297,10 @@
                     if (Math.abs(currentX) > 120) navigateCard(currentX > 0 ? -1 : 1);
                     else if (currentY < -100) deleteIdea(idea);
                     else if (currentY > 100) {
-                        const f = folders[currentFolderIdx];
-                        if (isStoreMode) saveInStoreMode(idea);
-                        else if (!f.locked) unclassifyIdea(idea);
+                        const displayFolders = isStoreMode ? folders.filter(f => !f.locked && f.id !== 'uncategorized') : folders;
+                        const f = displayFolders[currentFolderIdx];
+                        if (isStoreMode) saveInStoreMode(idea, f);
+                        else if (!folders[currentFolderIdx].locked) unclassifyIdea(idea);
                         else saveIdea(idea);
                     }
                 }
@@ -299,7 +310,7 @@
             };
         }
 
-        function startFolderDrag(e, chip) {
+        function startFolderDrag(e, chip, totalCount) {
             let fStartX = (e.touches ? e.touches[0] : e).clientX;
             let fCurrentX = 0;
             document.onmousemove = document.ontouchmove = me => {
@@ -308,14 +319,14 @@
             };
             document.onmouseup = document.ontouchend = () => {
                 document.onmousemove = document.ontouchmove = null;
-                if (Math.abs(fCurrentX) > 40) navigateFolder(fCurrentX > 0 ? -1 : 1);
+                if (Math.abs(fCurrentX) > 40) navigateFolder(fCurrentX > 0 ? -1 : 1, totalCount);
                 chip.style.transform = '';
             };
         }
 
-        function navigateFolder(d) {
+        function navigateFolder(d, totalCount) {
             const next = currentFolderIdx + d;
-            if (next >= 0 && next < folders.length) { currentFolderIdx = next; currentIndex = 0; renderFolders(); renderCards(); }
+            if (next >= 0 && next < totalCount) { currentFolderIdx = next; currentIndex = 0; renderFolders(); renderCards(); }
         }
 
         function navigateCard(d) {
@@ -327,11 +338,11 @@
         function toggleStoreMode() {
             isStoreMode = !isStoreMode;
             document.getElementById('storeModeBtn').classList.toggle('active', isStoreMode);
-            currentIndex = 0; renderCards();
+            currentFolderIdx = 0; currentIndex = 0; renderFolders(); renderCards();
             showToast(isStoreMode ? "정리 모드 ON" : "일반 모드");
         }
 
-        function saveInStoreMode(idea) { const f = folders[currentFolderIdx]; if (f.locked) return; idea.folder = f.id; saveData(); renderCards(); }
+        function saveInStoreMode(idea, targetFolder) { if (targetFolder) { idea.folder = targetFolder.id; saveData(); renderCards(); } }
         function saveIdea(idea) { const f = folders[currentFolderIdx]; if (f.locked) return; idea.folder = f.id; saveData(); renderCards(); }
         function unclassifyIdea(idea) { idea.folder = 'uncategorized'; saveData(); renderCards(); showToast("미분류 이동됨"); }
 
@@ -351,14 +362,17 @@
             const bar = document.getElementById('undoBar');
             bar.classList.add('show');
             if (undoTimeout) clearTimeout(undoTimeout);
-            // 2. 삭제 복구 토스트 시간을 2초로 수정
-            undoTimeout = setTimeout(() => bar.classList.remove('show'), 2000);
+            // 2. 삭제 복구 토스트 시간을 정확히 2초로 수정
+            undoTimeout = setTimeout(() => {
+                bar.classList.remove('show');
+            }, 2000);
         }
 
         function undoDelete() {
             if (lastDeletedIdea) {
                 ideas.splice(lastDeletedIdea.gIdx, 0, lastDeletedIdea);
                 lastDeletedIdea = null;
+                if (undoTimeout) clearTimeout(undoTimeout);
                 document.getElementById('undoBar').classList.remove('show');
                 saveData(); renderCards();
             }
@@ -395,7 +409,6 @@
                 const pt = e.touches ? e.touches[0] : e;
                 const diffY = pt.clientY - lStartY;
                 if (diffY > 0) {
-                    // 3. 타이틀 드래그 시 반응형 모션 적용
                     logo.style.transform = `translateX(-50%) translateY(${diffY * 0.5}px)`;
                     logo.style.color = 'var(--accent-color)';
                 }
@@ -416,7 +429,8 @@
                 logo.style.transform = `translateX(-50%)`;
                 logo.style.color = '';
                 if (diffY > 50) {
-                    const currentF = folders[currentFolderIdx];
+                    const displayFolders = isStoreMode ? folders.filter(f => !f.locked && f.id !== 'uncategorized') : folders;
+                    const currentF = displayFolders[currentFolderIdx];
                     const initF = (!currentF.locked) ? currentF.id : 'uncategorized';
                     const n = { id: Date.now(), content: '', folder: initF, favorite: false, createdAt: new Date().toISOString() };
                     ideas.unshift(n); currentIndex = 0; saveData(); renderCards(); startEdit(n.id);
