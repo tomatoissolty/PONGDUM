@@ -16,6 +16,7 @@
             --text-primary: #2C2C2E;
             --text-secondary: #86868B;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-light: #D1D1D6;
         }
 
         body.dark-mode {
@@ -24,6 +25,7 @@
             --text-primary: #E5E5E7;
             --text-secondary: #98989D;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --border-light: #48484A;
         }
 
         body {
@@ -35,17 +37,17 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* 헤더 & 검색창 */
+        /* 헤더 */
         .header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; position: relative; }
         .header-btns { display: flex; gap: 8px; }
         .logo { font-size: 28px; font-weight: 700; color: var(--accent-color); cursor: pointer; }
-        .icon-btn { width: 44px; height: 44px; border: none; background: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+        .icon-btn { width: 44px; height: 44px; border: none; background: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-size: 20px; }
         
         .search-container { position: absolute; top: 70px; left: 24px; right: 24px; display: none; z-index: 100; }
         .search-container.show { display: block; }
         .search-input { width: 100%; padding: 12px 20px; border-radius: 12px; border: none; background: var(--card-bg); box-shadow: var(--shadow); color: var(--text-primary); font-size: 16px; outline: none; }
 
-        /* 카드 레이아웃 */
+        /* 카드 레이아웃 (높이 0.8배: 384px) */
         .deck-container { position: relative; height: 460px; margin: 10px auto; max-width: 500px; padding: 0 20px; }
         .card-deck { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; }
         .card {
@@ -54,8 +56,12 @@
             text-align: center; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; touch-action: none; overflow: hidden;
         }
 
-        /* 듀얼 인디케이터 (왼쪽 상단 정렬) */
-        .card-indicators { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 6px; }
+        /* 수정 아이콘 (오른쪽 상단) */
+        .edit-trigger { position: absolute; top: 20px; right: 20px; color: var(--border-light); cursor: pointer; transition: color 0.2s; z-index: 10; font-size: 18px; }
+        .edit-trigger:hover { color: var(--text-secondary); }
+
+        /* 듀얼 인디케이터 (왼쪽 상단) */
+        .card-indicators { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 8px; }
         .folder-dot { width: 10px; height: 10px; border-radius: 50%; display: none; }
         .star-icon { color: #FFD60A; font-size: 16px; display: none; }
         .card.has-folder .folder-dot { display: block; }
@@ -68,60 +74,48 @@
         .card.left-1 { z-index: 4; transform: translateX(-100px) scale(0.9); opacity: 0.6; filter: blur(2px); }
         .card.right-1 { z-index: 4; transform: translateX(100px) scale(0.9); opacity: 0.6; filter: blur(2px); }
 
-        .card-content { font-size: 14px; line-height: 1.6; color: var(--text-primary); flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; }
-        .card.editing textarea { width: 100%; height: 100%; border: none; background: transparent; resize: none; font-size: 14px; text-align: center; outline: none; color: var(--text-primary); font-family: inherit; }
+        .card-content { font-size: 14px; line-height: 1.6; color: var(--text-primary); flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 500; padding: 20px 0; }
+        .card.editing textarea { width: 100%; height: 100%; border: none; background: transparent; resize: none; font-size: 14px; text-align: center; outline: none; color: var(--text-primary); font-family: inherit; font-weight: 500; }
 
-        /* 별 토스트 메시지 */
-        .fav-toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
-            background: rgba(0,0,0,0.7); width: 80px; height: 80px; border-radius: 20px;
-            display: flex; align-items: center; justify-content: center; font-size: 40px;
-            opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 3000;
-        }
+        /* 피드백 UI */
+        .fav-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); background: rgba(0,0,0,0.7); width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 3000; }
         .fav-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* 알림 토스트 (카드 상단) */
         .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 12px; font-size: 13px; z-index: 2000; opacity: 0; transition: all 0.3s; pointer-events: none; }
         .toast.show { opacity: 1; top: 95px; }
 
-        /* Undo 스낵바 */
-        .undo-bar {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: #2C2C2E; color: white; padding: 12px 20px; border-radius: 12px;
-            display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 4000; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+        .undo-bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #2C2C2E; color: white; padding: 14px 24px; border-radius: 16px; display: flex; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 4000; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .undo-bar.show { transform: translateX(-50%) translateY(0); }
         .undo-btn { color: var(--accent-color); font-weight: 700; cursor: pointer; text-decoration: underline; }
 
-        /* 폴더 및 설정 모달 관련 */
-        .modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 30px; transform: translateY(100%); transition: transform 0.4s; z-index: 101; max-height: 80vh; overflow-y: auto; }
+        /* 모달 & 설정 */
+        .modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-radius: 24px 24px 0 0; padding: 30px; transform: translateY(100%); transition: transform 0.4s; z-index: 101; max-height: 85vh; overflow-y: auto; }
         .modal.show { transform: translateY(0); }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100; }
         .modal-overlay.show { opacity: 1; pointer-events: all; }
         
-        .folder-item { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-color); border-radius: 16px; margin-bottom: 8px; }
-        .folder-item.selected { border: 2px solid var(--accent-color); }
+        .folder-item { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-color); border-radius: 16px; margin-bottom: 8px; border: 2px solid transparent; transition: border 0.2s; }
+        .folder-item.selected { border-color: var(--accent-color); }
         .folder-item input { flex: 1; border: none; background: transparent; font-size: 16px; outline: none; color: var(--text-primary); }
 
-        #settingsModal .color-palette { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-bottom: 20px; }
-        .color-option { width: 100%; aspect-ratio: 1; border-radius: 4px; cursor: pointer; }
+        #settingsModal .color-palette { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-bottom: 25px; }
+        .color-option { width: 100%; aspect-ratio: 1; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+        .color-option.active { border-color: var(--text-primary); }
         
-        .folder-palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-        .f-color-opt { height: 30px; border-radius: 8px; cursor: pointer; }
+        .folder-palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; border-top: 1px solid var(--bg-color); padding-top: 20px; }
+        .f-color-opt { height: 35px; border-radius: 10px; cursor: pointer; }
 
-        .card-counter { position: absolute; top: 410px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text-secondary); }
+        .card-counter { position: absolute; top: 410px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text-secondary); font-weight: 500; }
         .folder-section { padding: 20px; max-width: 600px; margin: 0 auto; position: relative; }
         .folder-chips { display: flex; align-items: center; justify-content: center; height: 50px; position: relative; }
-        .folder-chip { position: absolute; padding: 8px 16px; border-radius: 20px; background: var(--card-bg); box-shadow: var(--shadow); font-size: 14px; transition: all 0.5s; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .folder-chip { position: absolute; padding: 10px 18px; border-radius: 22px; background: var(--card-bg); box-shadow: var(--shadow); font-size: 14px; transition: all 0.5s; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
         .folder-chip.center { z-index: 5; background: var(--accent-color); color: white; }
         .folder-chip.side { opacity: 0.4; transform: scale(0.8); }
-        .folder-indicator { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary); opacity: 0.3; }
-        .dot.active { opacity: 1; background: var(--accent-color); transform: scale(1.3); }
-
-        .sort-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid #ddd; background: none; color: var(--text-primary); cursor: pointer; }
-        .sort-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+        
+        .btn-block { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s; font-family: inherit; font-size: 14px; }
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-outline { background: var(--bg-color); color: var(--text-primary); border: 1px solid var(--border-light); }
+        .btn-block:active { opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -138,9 +132,7 @@
     </div>
 
     <div class="deck-container">
-        <div class="card-deck" id="cardDeck">
-            <div class="empty-state" style="text-align: center; color: var(--text-secondary);">💡 드래그하여 시작</div>
-        </div>
+        <div class="card-deck" id="cardDeck"></div>
         <div class="toast" id="toast"></div>
         <div class="card-counter" id="cardCounter">0 / 0</div>
     </div>
@@ -149,8 +141,8 @@
 
     <div class="folder-section">
         <div class="folder-chips" id="folderChips"></div>
-        <div class="folder-indicator" id="folderIndicator"></div>
-        <button class="icon-btn" onclick="openMenu()" style="margin: 10px auto;">📁 폴더 관리</button>
+        <div class="folder-indicator" id="folderIndicator" style="display:flex; gap:6px; justify-content:center; margin-top:12px;"></div>
+        <button class="btn-block btn-outline" onclick="openMenu()" style="width: auto; margin: 15px auto 0; padding: 8px 20px;">📁 폴더 관리</button>
     </div>
 
     <div class="undo-bar" id="undoBar">
@@ -162,26 +154,32 @@
     
     <div class="modal" id="menuModal">
         <div id="folderList"></div>
-        <button class="sort-btn active" onclick="addNewFolder()" style="width: 100%; margin-top: 10px;">+ 새 폴더</button>
+        <button class="btn-block btn-primary" onclick="addNewFolder()">+ 새 폴더 추가</button>
         <div class="folder-palette" id="folderPalette"></div>
     </div>
 
     <div class="modal" id="settingsModal">
         <div class="color-palette" id="colorPalette"></div>
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            <div style="display: flex; justify-content: space-between;">
-                <span>Dark Mode</span>
-                <button onclick="toggleDarkMode()">Toggle</button>
+        
+        <div style="margin-bottom: 25px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:var(--bg-color); padding:15px; border-radius:14px;">
+                <span style="font-weight:600;">Dark Mode</span>
+                <button class="btn-outline" style="padding:6px 15px; border-radius:8px;" onclick="toggleDarkMode()">Toggle</button>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Sort</span>
-                <div style="display: flex; gap: 5px;">
-                    <button id="sortNew" class="sort-btn" onclick="setSort('newest')">Newest</button>
-                    <button id="sortOld" class="sort-btn" onclick="setSort('oldest')">Oldest</button>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-color); padding:15px; border-radius:14px;">
+                <span style="font-weight:600;">Sort</span>
+                <div style="display:flex; gap:6px;">
+                    <button id="sortNew" class="btn-outline" style="padding:6px 12px; border-radius:8px;" onclick="setSort('newest')">Newest</button>
+                    <button id="sortOld" class="btn-outline" style="padding:6px 12px; border-radius:8px;" onclick="setSort('oldest')">Oldest</button>
                 </div>
             </div>
-            <button onclick="exportData()" class="sort-btn">Export Data</button>
         </div>
+
+        <button onclick="exportAsText()" class="btn-block btn-primary">텍스트로 내보내기</button>
+        <button onclick="exportData()" class="btn-block btn-outline">동기화 데이터 내보내기</button>
+        <button onclick="importData()" class="btn-block btn-outline">동기화 데이터 가져오기</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport(event)">
     </div>
 
     <script>
@@ -207,6 +205,7 @@
             updateCounter();
             setupKeyboard();
             setupLogoDrag();
+            updateSortUI();
         }
 
         function loadData() {
@@ -227,11 +226,11 @@
             localStorage.setItem('pongdum_sort', sortOrder);
         }
 
-        /* UI 렌더링 */
+        /* 렌더링 엔진 */
         function renderCards() {
             const deck = document.getElementById('cardDeck');
             const filtered = getFilteredIdeas();
-            deck.innerHTML = filtered.length === 0 ? '<div style="color:var(--text-secondary)">💡 PONGDUM을 드래그하세요</div>' : '';
+            deck.innerHTML = filtered.length === 0 ? '<div style="color:var(--text-secondary); text-align:center;">💡 PONGDUM을 드래그하여 시작하세요</div>' : '';
             
             for (let i = -1; i <= 1; i++) {
                 const idx = currentIndex + i;
@@ -249,20 +248,24 @@
 
             const f = folders.find(f => f.id === idea.folder);
             const dotColor = f ? f.color : '#8E8E93';
-            const timeStr = new Date(idea.createdAt).toLocaleDateString();
+            const date = new Date(idea.createdAt);
+            const timeStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
 
             card.innerHTML = `
                 <div class="card-indicators">
                     <div class="folder-dot" style="background:${dotColor}"></div>
                     <div class="star-icon">★</div>
                 </div>
+                <div class="edit-trigger" onclick="event.stopPropagation(); startEdit(${idea.id});">✎</div>
                 <div class="card-content">${idea.content}</div>
                 <div class="card-time">${timeStr}</div>
             `;
 
             if (offset === 0) {
-                card.onmousedown = card.ontouchstart = e => startDrag(e, card, idea);
-                card.ondblclick = () => startEdit(idea);
+                card.onmousedown = card.ontouchstart = e => {
+                    if (e.target.classList.contains('edit-trigger')) return;
+                    startDrag(e, card, idea);
+                };
             }
             return card;
         }
@@ -276,27 +279,26 @@
                     const f = folders[idx];
                     const chip = document.createElement('div');
                     chip.className = `folder-chip ${i === 0 ? 'center' : 'side'}`;
-                    chip.style.transform += i < 0 ? ` translateX(${i * 80}px)` : ` translateX(${i * 80}px)`;
+                    chip.style.transform = `translateX(${i * 90}px)`;
                     chip.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${f.color}"></span> ${f.name}`;
                     if (i === 0) chip.onclick = () => selectFolder(f.id);
                     container.appendChild(chip);
                 }
             }
-            document.getElementById('folderIndicator').innerHTML = folders.map((_, i) => `<div class="dot ${i === currentFolderIndex ? 'active' : ''}"></div>`).join('');
+            document.getElementById('folderIndicator').innerHTML = folders.map((_, i) => 
+                `<div style="width:6px;height:6px;border-radius:50%;background:var(--accent-color);opacity:${i===currentFolderIndex?'1':'0.2'}"></div>`
+            ).join('');
         }
 
+        /* 아이디어 로직 */
         function getFilteredIdeas() {
             let list = ideas;
             if (currentFolder === 'favorites') list = ideas.filter(i => i.favorite);
             else if (currentFolder !== 'all') list = ideas.filter(i => i.folder === currentFolder);
-            
-            if (searchTerm) {
-                list = list.filter(i => i.content.toLowerCase().includes(searchTerm.toLowerCase()));
-            }
+            if (searchTerm) list = list.filter(i => i.content.toLowerCase().includes(searchTerm.toLowerCase()));
             return list;
         }
 
-        /* 인터랙션 */
         function startDrag(e, card, idea) {
             isDragging = true;
             dragStartTime = Date.now();
@@ -308,13 +310,19 @@
                 currentX = mpt.clientX - startX;
                 currentY = mpt.clientY - startY;
                 card.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                
+                const ind = document.getElementById('toast');
+                if (Math.abs(currentY) > 50) {
+                    ind.textContent = currentY < 0 ? '🗑️ 삭제하기' : '💾 폴더에 저장';
+                    ind.classList.add('show');
+                } else ind.classList.remove('show');
             };
 
             document.onmouseup = document.ontouchend = () => {
                 document.onmousemove = document.ontouchmove = null;
-                const duration = Date.now() - dragStartTime;
+                document.getElementById('toast').classList.remove('show');
                 
-                // 클릭 (짧은 터치 & 이동 적음) -> 즐겨찾기 토글
+                const duration = Date.now() - dragStartTime;
                 if (duration < 250 && Math.abs(currentX) < 10 && Math.abs(currentY) < 10) {
                     toggleFavorite(idea);
                 } else {
@@ -322,7 +330,6 @@
                     else if (currentY < -100) deleteIdea(idea);
                     else if (currentY > 100) saveToFolder(idea);
                 }
-                
                 card.style.transform = '';
                 isDragging = false; currentX = 0; currentY = 0;
             };
@@ -360,22 +367,23 @@
 
         function saveToFolder(idea) {
             if (currentFolder === 'all' || currentFolder === 'favorites') {
-                showToast('저장할 폴더로 이동 후 아래로 스와이프하세요');
+                showToast('저장할 폴더로 스와이프한 후 아래로 당기세요');
                 return;
             }
             idea.folder = currentFolder;
             saveData(); renderCards();
-            showToast(`"${folders.find(f => f.id === currentFolder).name}"에 저장됨`);
+            showToast(`"${folders.find(f => f.id === currentFolder).name}" 저장 완료`);
         }
 
-        function startEdit(idea) {
+        function startEdit(id) {
+            const idea = ideas.find(i => i.id === id);
             const deck = document.getElementById('cardDeck');
             deck.innerHTML = `
                 <div class="card center editing">
                     <textarea id="editArea">${idea.content}</textarea>
-                    <div style="display:flex; gap:10px; margin-top:15px;">
-                        <button class="sort-btn" onclick="renderCards()">취소</button>
-                        <button class="sort-btn active" onclick="finishEdit(${idea.id})">저장</button>
+                    <div style="display:flex; gap:10px; margin-top:15px; width:100%;">
+                        <button class="btn-block btn-outline" onclick="renderCards()">취소</button>
+                        <button class="btn-block btn-primary" onclick="finishEdit(${id})">저장</button>
                     </div>
                 </div>`;
             document.getElementById('editArea').focus();
@@ -386,79 +394,125 @@
             if (val) {
                 ideas.find(i => i.id === id).content = val;
                 saveData(); renderCards();
+                showToast('수정되었습니다');
             }
         }
 
+        /* 데이터 내보내기/가져오기 */
+        function exportAsText() {
+            if (ideas.length === 0) { showToast('내보낼 아이디어가 없습니다'); return; }
+            
+            let textOutput = "=== PONGDUM 아이디어 목록 ===\n\n";
+            const grouped = {};
+            
+            folders.forEach(f => grouped[f.id] = []);
+            ideas.forEach(i => grouped[i.folder].push(i));
+            
+            folders.forEach(f => {
+                if (grouped[f.id] && grouped[f.id].length > 0) {
+                    textOutput += `[${f.name}]\n`;
+                    grouped[f.id].forEach(item => {
+                        const d = new Date(item.createdAt);
+                        textOutput += `- ${item.content} (${d.toLocaleDateString()})\n`;
+                    });
+                    textOutput += "\n";
+                }
+            });
+
+            const blob = new Blob([textOutput], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pongdum_list_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            showToast('텍스트 파일로 저장되었습니다');
+        }
+
+        function exportData() {
+            const data = JSON.stringify({ ideas, folders });
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `pongdum_backup.json`; a.click();
+            showToast('동기화 파일이 생성되었습니다');
+        }
+
+        function importData() { document.getElementById('importFile').click(); }
+        function handleImport(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const data = JSON.parse(ev.target.result);
+                if (confirm('현재 데이터를 덮어쓰시겠습니까?')) {
+                    ideas = data.ideas; folders = data.folders;
+                    saveData(); location.reload();
+                }
+            };
+            reader.readAsText(file);
+        }
+
         /* 유틸리티 */
-        function toggleSearch() { document.getElementById('searchBar').classList.toggle('show'); }
+        function toggleSearch() { 
+            const bar = document.getElementById('searchBar');
+            bar.classList.toggle('show');
+            if (bar.classList.contains('show')) bar.querySelector('input').focus();
+        }
         function onSearch(val) { searchTerm = val; currentIndex = 0; renderCards(); updateCounter(); }
-        
         function selectFolder(id) { 
             currentFolder = id; currentIndex = 0; 
             currentFolderIndex = folders.findIndex(f => f.id === id);
             renderFolders(); renderCards(); updateCounter();
         }
-        
         function navigateCard(d) {
             const f = getFilteredIdeas();
             const n = currentIndex + d;
             if (n >= 0 && n < f.length) { currentIndex = n; renderCards(); updateCounter(); }
         }
-
         function updateCounter() {
             const f = getFilteredIdeas();
             document.getElementById('cardCounter').textContent = `${f.length > 0 ? currentIndex + 1 : 0} / ${f.length}`;
         }
-
         function setupLogoDrag() {
             const logo = document.querySelector('.logo');
             logo.draggable = true;
             logo.ondragend = () => {
-                const newIdea = { id: Date.now(), content: '새로운 생각...', folder: 'uncategorized', favorite: false, createdAt: new Date().toISOString() };
-                ideas.unshift(newIdea); currentIndex = 0; saveData(); renderCards(); startEdit(newIdea);
+                const n = { id: Date.now(), content: '', folder: 'uncategorized', favorite: false, createdAt: new Date().toISOString() };
+                ideas.unshift(n); currentIndex = 0; saveData(); renderCards(); startEdit(n.id);
             };
         }
-
-        /* 설정 & 폴더 관리 */
         function openMenu() { renderFolderList(); document.getElementById('overlay').classList.add('show'); document.getElementById('menuModal').classList.add('show'); }
         function openSettings() { document.getElementById('overlay').classList.add('show'); document.getElementById('settingsModal').classList.add('show'); }
         function closeAllModals() { document.querySelectorAll('.modal, .modal-overlay').forEach(el => el.classList.remove('show')); }
-
         function renderFolderList() {
-            const list = document.getElementById('folderList');
-            list.innerHTML = folders.filter(f => !f.locked).map(f => `
+            document.getElementById('folderList').innerHTML = folders.filter(f => !f.locked).map(f => `
                 <div class="folder-item ${selectedFolderToEdit === f.id ? 'selected' : ''}" onclick="selectedFolderToEdit='${f.id}'; renderFolderList();">
                     <div style="width:15px;height:15px;border-radius:50%;background:${f.color}"></div>
                     <input type="text" value="${f.name}" onchange="updateFolderName('${f.id}', this.value)">
-                    <button onclick="deleteFolder('${f.id}')">×</button>
+                    <button class="icon-btn" onclick="deleteFolder('${f.id}')" style="width:30px;height:30px;">×</button>
                 </div>
             `).join('');
         }
-
-        function renderFolderPalette() {
-            document.getElementById('folderPalette').innerHTML = colors.map(c => `<div class="f-color-opt" style="background:${c}" onclick="setFolderColor('${c}')"></div>`).join('');
-        }
-
-        function setFolderColor(c) {
-            if (selectedFolderToEdit) {
-                folders.find(f => f.id === selectedFolderToEdit).color = c;
-                saveData(); renderFolderList(); renderFolders(); renderCards();
-            }
-        }
-
+        function renderFolderPalette() { document.getElementById('folderPalette').innerHTML = colors.map(c => `<div class="f-color-opt" style="background:${c}" onclick="setFolderColor('${c}')"></div>`).join(''); }
+        function setFolderColor(c) { if (selectedFolderToEdit) { folders.find(f => f.id === selectedFolderToEdit).color = c; saveData(); renderFolderList(); renderFolders(); renderCards(); } }
         function updateFolderName(id, name) { folders.find(f => f.id === id).name = name; saveData(); renderFolders(); }
         function addNewFolder() { folders.push({ id: 'f'+Date.now(), name: '새 폴더', color: colors[0], locked: false }); saveData(); renderFolderList(); renderFolders(); }
         function deleteFolder(id) { folders = folders.filter(f => f.id !== id); if(currentFolder === id) currentFolder = 'all'; saveData(); renderFolderList(); renderFolders(); }
-
-        function setAccentColor(c) { document.documentElement.style.setProperty('--accent-color', c); saveData(); renderFolders(); }
-        function renderColorPalette() { document.getElementById('colorPalette').innerHTML = colors.map(c => `<div class="color-option" style="background:${c}" onclick="setAccentColor('${c}')"></div>`).join(''); }
+        function setAccentColor(c) { document.documentElement.style.setProperty('--accent-color', c); saveData(); renderFolders(); updateColorPaletteUI(); }
+        function renderColorPalette() { updateColorPaletteUI(); }
+        function updateColorPaletteUI() {
+            const current = document.documentElement.style.getPropertyValue('--accent-color');
+            document.getElementById('colorPalette').innerHTML = colors.map(c => `<div class="color-option ${c===current?'active':''}" style="background:${c}" onclick="setAccentColor('${c}')"></div>`).join('');
+        }
         function toggleDarkMode() { document.body.classList.toggle('dark-mode'); saveData(); }
-        function setSort(s) { sortOrder = s; applySort(); saveData(); }
+        function setSort(s) { sortOrder = s; applySort(); saveData(); updateSortUI(); }
+        function updateSortUI() {
+            document.getElementById('sortNew').classList.toggle('active', sortOrder === 'newest');
+            document.getElementById('sortOld').classList.toggle('active', sortOrder === 'oldest');
+        }
         function applySort() { 
             ideas.sort((a, b) => sortOrder === 'newest' ? new Date(b.createdAt) - new Date(a.createdAt) : new Date(a.createdAt) - new Date(b.createdAt));
-            renderCards();
+            currentIndex = 0; renderCards(); updateCounter();
         }
-
         function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
         function setupKeyboard() {
             document.onkeydown = e => {
@@ -466,7 +520,7 @@
                 if (e.key === 'ArrowLeft') navigateCard(-1);
                 if (e.key === 'ArrowRight') navigateCard(1);
                 if (e.key === 'f') toggleFavorite(getFilteredIdeas()[currentIndex]);
-                if (e.key === 'Enter') document.querySelector('.logo').ondragend();
+                if (e.key === 'Enter') { e.preventDefault(); setupLogoDrag(); }
             };
         }
 
