@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PONGDUM - 아이디어 덤핑</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --accent-color: #007AFF;
+            --bg-color: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode {
+            --bg-color: #000000;
+            --card-bg: #1C1C1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #98989D;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            user-select: none;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-btn, .settings-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            opacity: 0;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-color), #5856D6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: grab;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .logo.dragging {
+            cursor: grabbing;
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+
+        .deck-container {
+            position: relative;
+            height: 560px;
+            margin: 40px auto 20px;
+            max-width: 500px;
+            padding: 0 20px;
+        }
+
+        .card-deck {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            position: absolute;
+            width: 320px;
+            height: 480px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: grab;
+            touch-action: none;
+            overflow-y: auto;
+        }
+
+        .card.dragging {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        .card.editing {
+            cursor: text;
+        }
+
+        .card.center {
+            z-index: 5;
+            transform: translateX(0) scale(1);
+            opacity: 1;
+            filter: blur(0);
+        }
+
+        .card.left-1 {
+            z-index: 4;
+            transform: translateX(-100px) scale(0.9);
+            opacity: 0.6;
+            filter: blur(2px);
+        }
+
+        .card.left-2 {
+            z-index: 3;
+            transform: translateX(-180px) scale(0.8);
+            opacity: 0.3;
+            filter: blur(3px);
+        }
+
+        .card.right-1 {
+            z-index: 4;
+            transform: translateX(100px) scale(0.9);
+            opacity: 0.6;
+            filter: blur(2px);
+        }
+
+        .card.right-2 {
+            z-index: 3;
+            transform: translateX(180px) scale(0.8);
+            opacity: 0.3;
+            filter: blur(3px);
+        }
+
+        .card.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .card.favorite::before {
+            content: '⭐';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 24px;
+        }
+
+        .card-content {
+            font-size: 10px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            word-break: keep-all;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card.editing .card-content {
+            display: block;
+        }
+
+        .card.editing textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            resize: none;
+            font-size: 10px;
+            font-family: inherit;
+            color: var(--text-primary);
+            text-align: center;
+            outline: none;
+            line-height: 1.6;
+        }
+
+        .edit-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .card.editing .edit-buttons {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .edit-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .edit-btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn-save {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-cancel-edit {
+            background: var(--bg-color);
+            color: var(--text-primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 16px 28px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .gesture-hint {
+            position: absolute;
+            top: 500px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            padding: 12px 24px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            font-size: 13px;
+            color: var(--text-secondary);
+            opacity: 0;
+            transition: opacity 0.5s;
+            white-space: nowrap;
+        }
+
+        .gesture-hint.show {
+            opacity: 1;
+        }
+
+        .card-counter {
+            position: absolute;
+            top: 540px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .folder-section {
+            padding: 30px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .folder-container {
+            position: relative;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .folder-menu-btn {
+            position: absolute;
+            left: 0;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: var(--card-bg);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .folder-menu-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .folder-chips {
+            position: absolute;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        .folder-chip {
+            flex-shrink: 0;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: absolute;
+            box-shadow: var(--shadow);
+        }
+
+        .folder-chip.center {
+            z-index: 5;
+            transform: translateX(0) scale(1);
+            opacity: 1;
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .folder-chip.left-1 {
+            z-index: 4;
+            transform: translateX(-100px) scale(0.85);
+            opacity: 0.5;
+        }
+
+        .folder-chip.left-2 {
+            z-index: 3;
+            transform: translateX(-180px) scale(0.7);
+            opacity: 0.3;
+        }
+
+        .folder-chip.right-1 {
+            z-index: 4;
+            transform: translateX(100px) scale(0.85);
+            opacity: 0.5;
+        }
+
+        .folder-chip.right-2 {
+            z-index: 3;
+            transform: translateX(180px) scale(0.7);
+            opacity: 0.3;
+        }
+
+        .folder-chip.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .folder-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .folder-indicator {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .folder-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+
+        .folder-dot.active {
+            opacity: 1;
+            background: var(--accent-color);
+            transform: scale(1.3);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 24px 24px 0 0;
+            padding: 30px;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 101;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-color);
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .color-option {
+            aspect-ratio: 1;
+            border-radius: 16px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .color-option.active {
+            border-color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-color);
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+
+        .settings-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .toggle-btn {
+            width: 52px;
+            height: 32px;
+            background: var(--text-secondary);
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-color);
+        }
+
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-btn.active::after {
+            transform: translateX(20px);
+        }
+
+        .sort-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .sort-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--bg-color);
+            background: transparent;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+        }
+
+        .sort-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .folder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-color);
+            border-radius: 16px;
+        }
+
+        .folder-item input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 500;
+            outline: none;
+            color: var(--text-primary);
+        }
+
+        .folder-color-picker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid var(--bg-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .delete-folder-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #FF3B30;
+            color: white;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-secondary);
+            z-index: 1;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .swipe-indicator.show {
+            opacity: 1;
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                width: 280px;
+            }
+            .logo {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="menu-btn"></button>
+        <div class="logo" id="logo" draggable="true">PONGDUM</div>
+        <button class="settings-btn" onclick="openSettings()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="deck-container">
+        <div class="card-deck" id="cardDeck">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">💡</div>
+                <div class="empty-state-text">PONGDUM을 드래그하여<br>첫 아이디어를 추가하세요</div>
+            </div>
+        </div>
+        <div class="swipe-indicator" id="swipeIndicator"></div>
+        <div class="gesture-hint" id="gestureHint">← → 이동 · ↑ 삭제 · ↓ 저장 · ⭐ 즐겨찾기</div>
+        <div class="card-counter" id="cardCounter">0 / 0</div>
+    </div>
+
+    <div class="folder-section">
+        <div class="folder-container">
+            <button class="folder-menu-btn" onclick="openMenu()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="folder-chips" id="folderChips"></div>
+        </div>
+        <div class="folder-indicator" id="folderIndicator"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+    <div class="modal" id="menuModal">
+        <div class="modal-header">
+            <div class="modal-title">폴더 관리</div>
+            <button class="close-btn" onclick="closeMenu()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="folder-list" id="folderList"></div>
+        <button class="sort-btn active" onclick="addNewFolder()" style="margin-top: 20px; width: 100%;">
+            폴더 추가
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+    <div class="modal" id="settingsModal">
+        <div class="modal-header">
+            <div class="modal-title"></div>
+            <button class="close-btn" onclick="closeSettings()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="color-palette" id="colorPalette"></div>
+        
+        <div class="settings-section">
+            <div class="settings-row">
+                <span class="settings-label">다크 모드</span>
+                <button class="toggle-btn" id="darkModeToggle" onclick="toggleDarkMode()"></button>
+            </div>
+            <div class="settings-row">
+                <span class="settings-label">정렬</span>
+                <div class="sort-options">
+                    <button class="sort-btn active" onclick="setSortOrder('newest')">최신순</button>
+                    <button class="sort-btn" onclick="setSortOrder('oldest')">오래된순</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <button class="sort-btn" onclick="exportData()" style="width: 100%; margin-bottom: 8px;">데이터 내보내기</button>
+            <button class="sort-btn" onclick="importData()" style="width: 100%;">데이터 가져오기</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImport(event)">
+        </div>
+    </div>
+
+    <script>
+        let ideas = [];
+        let folders = [
+            { id: 'all', name: '전체', color: '#007AFF', locked: true },
+            { id: 'uncategorized', name: '미분류', color: '#8E8E93', locked: false },
+            { id: 'favorites', name: '즐겨찾기', color: '#FFD60A', locked: true }
+        ];
+        let currentIndex = 0;
+        let currentFolder = 'all';
+        let currentFolderIndex = 0;
+        let sortOrder = 'newest';
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let currentCard = null;
+        let isEditing = false;
+        let editingCardId = null;
+
+        const colors = [
+            '#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA', '#E0BBE4',
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'
+        ];
+
+        function init() {
+            loadData();
+            renderColorPalette();
+            renderFolders();
+            renderCards();
+            updateCounter();
+            showGestureHint();
+            setupKeyboardShortcuts();
+            setupFolderSwipe();
+            applySort();
+        }
+
+        function saveData() {
+            localStorage.setItem('pongdum_ideas', JSON.stringify(ideas));
+            localStorage.setItem('pongdum_folders', JSON.stringify(folders));
+            localStorage.setItem('pongdum_accent', document.documentElement.style.getPropertyValue('--accent-color') || '#007AFF');
+            localStorage.setItem('pongdum_darkmode', document.body.classList.contains('dark-mode'));
+            localStorage.setItem('pongdum_sort', sortOrder);
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('pongdum_ideas');
+            const savedFolders = localStorage.getItem('pongdum_folders');
+            const savedAccent = localStorage.getItem('pongdum_accent');
+            const savedDark = localStorage.getItem('pongdum_darkmode');
+            const savedSort = localStorage.getItem('pongdum_sort');
+            
+            if (saved) ideas = JSON.parse(saved);
+            if (savedFolders) folders = JSON.parse(savedFolders);
+            if (savedAccent) setAccentColor(savedAccent);
+            if (savedDark === 'true') document.body.classList.add('dark-mode');
+            if (savedSort) sortOrder = savedSort;
+            
+            updateDarkModeToggle();
+        }
+
+        function renderColorPalette() {
+            const palette = document.getElementById('colorPalette');
+            const current = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            palette.innerHTML = colors.map(c => 
+                `<div class="color-option ${c === current ? 'active' : ''}" style="background: ${c};" onclick="setAccentColor('${c}')"></div>`
+            ).join('');
+        }
+
+        function setAccentColor(color) {
+            document.documentElement.style.setProperty('--accent-color', color);
+            saveData();
+            renderColorPalette();
+            renderFolders();
+        }
+
+        function renderFolders() {
+            const container = document.getElementById('folderChips');
+            const indicator = document.getElementById('folderIndicator');
+            
+            container.innerHTML = '';
+            for (let i = -2; i <= 2; i++) {
+                const index = currentFolderIndex + i;
+                if (index >= 0 && index < folders.length) {
+                    const folder = folders[index];
+                    const chip = document.createElement('div');
+                    chip.className = 'folder-chip';
+                    
+                    if (i === 0) chip.classList.add('center');
+                    else if (i === -1) chip.classList.add('left-1');
+                    else if (i === -2) chip.classList.add('left-2');
+                    else if (i === 1) chip.classList.add('right-1');
+                    else if (i === 2) chip.classList.add('right-2');
+                    
+                    chip.innerHTML = `
+                        <span class="folder-color" style="background: ${folder.color};"></span>
+                        ${folder.name}
+                    `;
+                    
+                    if (i === 0) {
+                        chip.onclick = () => selectFolder(folder.id);
+                    }
+                    
+                    container.appendChild(chip);
+                }
+            }
+            
+            indicator.innerHTML = folders.map((_, i) => 
+                `<div class="folder-dot ${i === currentFolderIndex ? 'active' : ''}"></div>`
+            ).join('');
+        }
+
+        function setupFolderSwipe() {
+            const container = document.getElementById('folderChips');
+            let folderStartX = 0;
+            let folderDragging = false;
+            
+            container.addEventListener('mousedown', e => {
+                folderStartX = e.clientX;
+                folderDragging = true;
+            });
+            
+            container.addEventListener('touchstart', e => {
+                folderStartX = e.touches[0].clientX;
+                folderDragging = true;
+            });
+            
+            document.addEventListener('mousemove', e => {
+                if (!folderDragging) return;
+                const diff = e.clientX - folderStartX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) navigateFolder(-1);
+                    else navigateFolder(1);
+                    folderDragging = false;
+                }
+            });
+            
+            document.addEventListener('touchmove', e => {
+                if (!folderDragging) return;
+                const diff = e.touches[0].clientX - folderStartX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) navigateFolder(-1);
+                    else navigateFolder(1);
+                    folderDragging = false;
+                }
+            });
+            
+            document.addEventListener('mouseup', () => folderDragging = false);
+            document.addEventListener('touchend', () => folderDragging = false);
+        }
+
+        function navigateFolder(dir) {
+            const newIndex = currentFolderIndex + dir;
+            if (newIndex >= 0 && newIndex < folders.length) {
+                currentFolderIndex = newIndex;
+                selectFolder(folders[currentFolderIndex].id);
+            }
+        }
+
+        function selectFolder(id) {
+            currentFolder = id;
+            currentIndex = 0;
+            currentFolderIndex = folders.findIndex(f => f.id === id);
+            renderFolders();
+            renderCards();
+            updateCounter();
+        }
+
+        function renderFolderList() {
+            const list = document.getElementById('folderList');
+            list.innerHTML = folders.filter(f => !f.locked).map(f => `
+                <div class="folder-item">
+                    <div class="folder-color-picker" style="background: ${f.color};" onclick="pickFolderColor('${f.id}')"></div>
+                    <input type="text" value="${f.name}" onchange="updateFolderName('${f.id}', this.value)">
+                    <button class="delete-folder-btn" onclick="deleteFolder('${f.id}')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function pickFolderColor(id) {
+            const newColor = colors[Math.floor(Math.random() * colors.length)];
+            const folder = folders.find(f => f.id === id);
+            if (folder) {
+                folder.color = newColor;
+                saveData();
+                renderFolderList();
+                renderFolders();
+            }
+        }
+
+        function addNewFolder() {
+            const folder = {
+                id: 'folder_' + Date.now(),
+                name: '새 폴더',
+                color: colors[Math.floor(Math.random() * colors.length)],
+                locked: false
+            };
+            folders.push(folder);
+            saveData();
+            renderFolderList();
+            renderFolders();
+        }
+
+        function updateFolderName(id, name) {
+            const folder = folders.find(f => f.id === id);
+            if (folder) {
+                folder.name = name;
+                saveData();
+                renderFolders();
+            }
+        }
+
+        function deleteFolder(id) {
+            if (confirm('이 폴더를 삭제하시겠습니까?')) {
+                ideas.forEach(i => {
+                    if (i.folder === id) i.folder = 'uncategorized';
+                });
+                folders = folders.filter(f => f.id !== id);
+                if (currentFolder === id) currentFolder = 'all';
+                saveData();
+                renderFolderList();
+                renderFolders();
+                renderCards();
+            }
+        }
+
+        function renderCards() {
+            const deck = document.getElementById('cardDeck');
+            const empty = document.getElementById('emptyState');
+            const filtered = getFilteredIdeas();
+            
+            if (filtered.length === 0) {
+                empty.style.display = 'block';
+                deck.querySelectorAll('.card').forEach(c => c.remove());
+                return;
+            }
+            
+            empty.style.display = 'none';
+            deck.querySelectorAll('.card').forEach(c => c.remove());
+            
+            for (let i = -2; i <= 2; i++) {
+                const idx = currentIndex + i;
+                if (idx >= 0 && idx < filtered.length) {
+                    deck.appendChild(createCard(filtered[idx], i));
+                }
+            }
+        }
+
+        function createCard(idea, offset) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            if (idea.favorite) card.classList.add('favorite');
+            
+            if (offset === 0) card.classList.add('center');
+            else if (offset === -1) card.classList.add('left-1');
+            else if (offset === -2) card.classList.add('left-2');
+            else if (offset === 1) card.classList.add('right-1');
+            else if (offset === 2) card.classList.add('right-2');
+            
+            const size = calculateFontSize(idea.content);
+            card.innerHTML = `
+                <div class="card-content" style="font-size: ${size}px;">${idea.content}</div>
+                <div class="edit-buttons">
+                    <button class="edit-btn btn-cancel-edit" onclick="cancelEdit()">취소</button>
+                    <button class="edit-btn btn-save" onclick="saveEdit()">저장</button>
+                </div>
+            `;
+            
+            if (offset === 0) {
+                card.addEventListener('mousedown', handleCardMouseDown);
+                card.addEventListener('touchstart', handleCardTouchStart);
+                card.addEventListener('dblclick', () => startEdit(idea.id));
+            }
+            
+            return card;
+        }
+
+        function calculateFontSize(text) {
+            const len = text.length;
+            if (len < 50) return 12;
+            if (len < 100) return 10;
+            if (len < 200) return 9;
+            return 8;
+        }
+
+        function getFilteredIdeas() {
+            let filtered = ideas;
+            if (currentFolder === 'favorites') {
+                filtered = ideas.filter(i => i.favorite);
+            } else if (currentFolder !== 'all') {
+                filtered = ideas.filter(i => i.folder === currentFolder);
+            }
+            return filtered;
+        }
+
+        function handleCardMouseDown(e) {
+            if (isEditing || e.button !== 0) return;
+            startDrag(e.clientX, e.clientY, e.currentTarget);
+        }
+
+        function handleCardTouchStart(e) {
+            if (isEditing) return;
+            startDrag(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget);
+        }
+
+        function startDrag(x, y, card) {
+            isDragging = true;
+            startX = x;
+            startY = y;
+            currentCard = card;
+            currentCard.classList.add('dragging');
+            
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+            document.addEventListener('touchmove', handleDragMove);
+            document.addEventListener('touchend', handleDragEnd);
+            
+            hideGestureHint();
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            
+            currentX = clientX - startX;
+            currentY = clientY - startY;
+            
+            currentCard.style.transform = `translate(${currentX}px, ${currentY}px) scale(1)`;
+            
+            const indicator = document.getElementById('swipeIndicator');
+            if (Math.abs(currentY) > 50) {
+                indicator.textContent = currentY < 0 ? '🗑️' : '💾';
+                indicator.classList.add('show');
+            } else {
+                indicator.classList.remove('show');
+            }
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            document.removeEventListener('mousemove', handleDragMove);
+            document.removeEventListener('mouseup', handleDragEnd);
+            document.removeEventListener('touchmove', handleDragMove);
+            document.removeEventListener('touchend', handleDragEnd);
+            
+            document.getElementById('swipeIndicator').classList.remove('show');
+            
+            if (Math.abs(currentX) > 100) {
+                navigateCard(currentX > 0 ? -1 : 1);
+            } else if (currentY < -100) {
+                deleteCurrentCard();
+            } else if (currentY > 100) {
+                saveCurrentCard();
+            }
+            
+            if (currentCard) {
+                currentCard.classList.remove('dragging');
+                currentCard.style.transform = '';
+            }
+            currentCard = null;
+            currentX = 0;
+            currentY = 0;
+        }
+
+        function navigateCard(dir) {
+            const filtered = getFilteredIdeas();
+            const newIndex = currentIndex + dir;
+            if (newIndex >= 0 && newIndex < filtered.length) {
+                currentIndex = newIndex;
+                renderCards();
+                updateCounter();
+            }
+        }
+
+        function deleteCurrentCard() {
+            const filtered = getFilteredIdeas();
+            const idea = filtered[currentIndex];
+            const globalIdx = ideas.findIndex(i => i === idea);
+            
+            if (globalIdx !== -1) {
+                const deleted = ideas.splice(globalIdx, 1)[0];
+                showToast('삭제되었습니다');
+                
+                setTimeout(() => {
+                    if (confirm('삭제를 취소하시겠습니까?')) {
+                        ideas.splice(globalIdx, 0, deleted);
+                        saveData();
+                        renderCards();
+                        updateCounter();
+                    }
+                }, 100);
+                
+                if (currentIndex >= filtered.length - 1) {
+                    currentIndex = Math.max(0, filtered.length - 2);
+                }
+                saveData();
+                renderCards();
+                updateCounter();
+            }
+        }
+
+        function saveCurrentCard() {
+            if (currentFolder === 'all') {
+                showToast('폴더를 선택해주세요');
+                return;
+            }
+            
+            const filtered = getFilteredIdeas();
+            const idea = filtered[currentIndex];
+            idea.folder = currentFolder;
+            saveData();
+            showToast(`"${folders.find(f => f.id === currentFolder).name}"에 저장`);
+        }
+
+        function startEdit(id) {
+            isEditing = true;
+            editingCardId = id;
+            
+            const filtered = getFilteredIdeas();
+            const idea = filtered[currentIndex];
+            
+            const deck = document.getElementById('cardDeck');
+            deck.querySelectorAll('.card').forEach(c => c.remove());
+            
+            const card = document.createElement('div');
+            card.className = 'card center editing';
+            if (idea.favorite) card.classList.add('favorite');
+            
+            const size = calculateFontSize(idea.content);
+            card.innerHTML = `
+                <div class="card-content">
+                    <textarea id="editTextarea" style="font-size: ${size}px;">${idea.content}</textarea>
+                </div>
+                <div class="edit-buttons">
+                    <button class="edit-btn btn-cancel-edit" onclick="cancelEdit()">취소</button>
+                    <button class="edit-btn btn-save" onclick="saveEdit()">저장</button>
+                </div>
+            `;
+            
+            deck.appendChild(card);
+            document.getElementById('editTextarea').focus();
+        }
+
+        function saveEdit() {
+            const text = document.getElementById('editTextarea').value.trim();
+            if (!text) return;
+            
+            const filtered = getFilteredIdeas();
+            const idea = filtered[currentIndex];
+            idea.content = text;
+            
+            isEditing = false;
+            editingCardId = null;
+            saveData();
+            renderCards();
+            showToast('저장되었습니다');
+        }
+
+        function cancelEdit() {
+            isEditing = false;
+            editingCardId = null;
+            renderCards();
+        }
+
+        const logo = document.getElementById('logo');
+        let logoDragging = false;
+
+        logo.addEventListener('dragstart', e => {
+            logoDragging = true;
+            logo.classList.add('dragging');
+        });
+
+        logo.addEventListener('dragend', () => {
+            logoDragging = false;
+            logo.classList.remove('dragging');
+        });
+
+        document.getElementById('cardDeck').addEventListener('dragover', e => e.preventDefault());
+        document.getElementById('cardDeck').addEventListener('drop', e => {
+            e.preventDefault();
+            if (logoDragging) addNewIdea();
+        });
+
+        function addNewIdea() {
+            const idea = {
+                id: Date.now(),
+                content: '',
+                folder: 'uncategorized',
+                favorite: false,
+                createdAt: new Date().toISOString()
+            };
+            ideas.unshift(idea);
+            currentIndex = 0;
+            saveData();
+            startEdit(idea.id);
+        }
+
+        function openMenu() {
+            renderFolderList();
+            document.getElementById('menuOverlay').classList.add('show');
+            document.getElementById('menuModal').classList.add('show');
+        }
+
+        function closeMenu() {
+            document.getElementById('menuOverlay').classList.remove('show');
+            document.getElementById('menuModal').classList.remove('show');
+        }
+
+        function openSettings() {
+            document.getElementById('settingsOverlay').classList.add('show');
+            document.getElementById('settingsModal').classList.add('show');
+            updateSortButtons();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsOverlay').classList.remove('show');
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function showGestureHint() {
+            setTimeout(() => {
+                if (ideas.length > 0) {
+                    document.getElementById('gestureHint').classList.add('show');
+                }
+            }, 1000);
+        }
+
+        function hideGestureHint() {
+            document.getElementById('gestureHint').classList.remove('show');
+        }
+
+        function updateCounter() {
+            const filtered = getFilteredIdeas();
+            document.getElementById('cardCounter').textContent = 
+                `${filtered.length > 0 ? currentIndex + 1 : 0} / ${filtered.length}`;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            updateDarkModeToggle();
+            saveData();
+        }
+
+        function updateDarkModeToggle() {
+            const btn = document.getElementById('darkModeToggle');
+            if (document.body.classList.contains('dark-mode')) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+
+        function setSortOrder(order) {
+            sortOrder = order;
+            updateSortButtons();
+            applySort();
+            saveData();
+        }
+
+        function updateSortButtons() {
+            document.querySelectorAll('.sort-options .sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.sort-options .sort-btn[onclick*="${sortOrder}"]`)?.classList.add('active');
+        }
+
+        function applySort() {
+            ideas.sort((a, b) => {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+                return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+            renderCards();
+        }
+
+        function toggleFavorite() {
+            const filtered = getFilteredIdeas();
+            const idea = filtered[currentIndex];
+            idea.favorite = !idea.favorite;
+            saveData();
+            renderCards();
+            showToast(idea.favorite ? '즐겨찾기에 추가' : '즐겨찾기에서 제거');
+        }
+
+        function exportData() {
+            const data = {
+                ideas,
+                folders,
+                version: 1
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pongdum_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('데이터를 내보냈습니다');
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (confirm('현재 데이터를 덮어쓰시겠습니까?')) {
+                        ideas = data.ideas || [];
+                        folders = data.folders || folders;
+                        saveData();
+                        renderFolders();
+                        renderCards();
+                        updateCounter();
+                        showToast('데이터를 가져왔습니다');
+                        closeSettings();
+                    }
+                } catch {
+                    showToast('잘못된 파일입니다');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', e => {
+                if (document.activeElement.tagName === 'INPUT' || 
+                    document.activeElement.tagName === 'TEXTAREA') return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft': navigateCard(-1); break;
+                    case 'ArrowRight': navigateCard(1); break;
+                    case 'ArrowUp': deleteCurrentCard(); break;
+                    case 'ArrowDown': saveCurrentCard(); break;
+                    case 'Enter': addNewIdea(); break;
+                    case 'f': toggleFavorite(); break;
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
