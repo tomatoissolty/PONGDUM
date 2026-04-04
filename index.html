@@ -18,7 +18,7 @@
             --accent-color: #007AFF;
             --bg-color: #F5F5F7;
             --card-bg: #FFFFFF;
-            --text-primary: #1D1D1F;
+            --text-primary: #2C2C2E; /* 1. 부드러운 검정색으로 수정 */
             --text-secondary: #86868B;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
@@ -26,7 +26,7 @@
         body.dark-mode {
             --bg-color: #000000;
             --card-bg: #1C1C1E;
-            --text-primary: #FFFFFF;
+            --text-primary: #E5E5E7;
             --text-secondary: #98989D;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
@@ -56,8 +56,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-primary);
-            opacity: 0;
+            color: var(--text-secondary); /* 2. 회색 아이콘으로 수정 */
+            opacity: 1; /* 가시성 확보 */
+            transition: opacity 0.2s;
+        }
+
+        .menu-btn:active, .settings-btn:active {
+            opacity: 0.6;
         }
 
         .logo {
@@ -80,7 +85,7 @@
         .deck-container {
             position: relative;
             height: 560px;
-            margin: 40px auto 20px;
+            margin: 20px auto 20px;
             max-width: 500px;
             padding: 0 20px;
         }
@@ -169,8 +174,9 @@
             font-size: 24px;
         }
 
+        /* 1. 카드의 폰트 크기 1.4배 키움 및 색상 적용 */
         .card-content {
-            font-size: 10px;
+            font-size: 14px; 
             line-height: 1.6;
             color: var(--text-primary);
             word-break: keep-all;
@@ -179,6 +185,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 500;
         }
 
         .card.editing .card-content {
@@ -191,12 +198,13 @@
             border: none;
             background: transparent;
             resize: none;
-            font-size: 10px;
+            font-size: 14px;
             font-family: inherit;
             color: var(--text-primary);
             text-align: center;
             outline: none;
             line-height: 1.6;
+            font-weight: 500;
         }
 
         .edit-buttons {
@@ -237,26 +245,28 @@
             color: var(--text-primary);
         }
 
+        /* 3. 토스트 알림 위치를 카드 상단으로 이동 */
         .toast {
             position: fixed;
-            top: 50%;
+            top: 100px; /* 카드 데크 위쪽으로 배치 */
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 16px 28px;
+            padding: 12px 24px;
             border-radius: 16px;
             font-size: 14px;
             font-weight: 500;
             backdrop-filter: blur(20px);
             z-index: 1000;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
         }
 
         .toast.show {
             opacity: 1;
+            top: 110px; /* 나타날 때 살짝 내려오는 애니메이션 */
         }
 
         .gesture-hint {
@@ -680,8 +690,9 @@
         <button class="menu-btn"></button>
         <div class="logo" id="logo" draggable="true">PONGDUM</div>
         <button class="settings-btn" onclick="openSettings()">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
         </button>
     </div>
@@ -731,7 +742,7 @@
     <div class="modal-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
     <div class="modal" id="settingsModal">
         <div class="modal-header">
-            <div class="modal-title"></div>
+            <div class="modal-title">설정</div>
             <button class="close-btn" onclick="closeSettings()">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -1043,12 +1054,13 @@
             return card;
         }
 
+        // 1. 폰트 크기 계산 로직 1.4배 수정
         function calculateFontSize(text) {
             const len = text.length;
-            if (len < 50) return 12;
-            if (len < 100) return 10;
-            if (len < 200) return 9;
-            return 8;
+            if (len < 50) return 17; // (약 12 * 1.4)
+            if (len < 100) return 14; // (10 * 1.4)
+            if (len < 200) return 12; // (약 9 * 1.4)
+            return 11; // (약 8 * 1.4)
         }
 
         function getFilteredIdeas() {
@@ -1154,6 +1166,7 @@
                 const deleted = ideas.splice(globalIdx, 1)[0];
                 showToast('삭제되었습니다');
                 
+                // 삭제 취소 확인창이 카드 확인을 방해하지 않도록 약간 지연
                 setTimeout(() => {
                     if (confirm('삭제를 취소하시겠습니까?')) {
                         ideas.splice(globalIdx, 0, deleted);
@@ -1174,7 +1187,7 @@
 
         function saveCurrentCard() {
             if (currentFolder === 'all') {
-                showToast('폴더를 선택해주세요');
+                showToast('저장할 폴더를 스와이프해서 선택해주세요');
                 return;
             }
             
@@ -1182,7 +1195,7 @@
             const idea = filtered[currentIndex];
             idea.folder = currentFolder;
             saveData();
-            showToast(`"${folders.find(f => f.id === currentFolder).name}"에 저장`);
+            showToast(`"${folders.find(f => f.id === currentFolder).name}" 폴더에 저장`);
         }
 
         function startEdit(id) {
@@ -1226,7 +1239,7 @@
             editingCardId = null;
             saveData();
             renderCards();
-            showToast('저장되었습니다');
+            showToast('수정 내용이 저장되었습니다');
         }
 
         function cancelEdit() {
@@ -1355,11 +1368,12 @@
 
         function toggleFavorite() {
             const filtered = getFilteredIdeas();
+            if (filtered.length === 0) return;
             const idea = filtered[currentIndex];
             idea.favorite = !idea.favorite;
             saveData();
             renderCards();
-            showToast(idea.favorite ? '즐겨찾기에 추가' : '즐겨찾기에서 제거');
+            showToast(idea.favorite ? '즐겨찾기에 추가되었습니다' : '즐겨찾기에서 해제되었습니다');
         }
 
         function exportData() {
@@ -1374,7 +1388,7 @@
             a.href = url;
             a.download = `pongdum_backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-            showToast('데이터를 내보냈습니다');
+            showToast('데이터 백업 파일이 생성되었습니다');
         }
 
         function importData() {
@@ -1389,18 +1403,18 @@
             reader.onload = ev => {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if (confirm('현재 데이터를 덮어쓰시겠습니까?')) {
+                    if (confirm('현재 데이터를 덮어쓰시겠습니까? 기존 데이터는 모두 사라집니다.')) {
                         ideas = data.ideas || [];
                         folders = data.folders || folders;
                         saveData();
                         renderFolders();
                         renderCards();
                         updateCounter();
-                        showToast('데이터를 가져왔습니다');
+                        showToast('데이터를 성공적으로 가져왔습니다');
                         closeSettings();
                     }
                 } catch {
-                    showToast('잘못된 파일입니다');
+                    showToast('유효하지 않은 파일 형식입니다');
                 }
             };
             reader.readAsText(file);
