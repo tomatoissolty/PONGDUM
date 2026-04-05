@@ -24,17 +24,19 @@
             --shadow-sm: 0 2px 12px rgba(0,0,0,0.04);
             --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
             --shadow-lg: 0 16px 40px rgba(0,0,0,0.12);
+            --highlight-bg: rgba(255, 235, 59, 0.4);
         }
 
         body.dark-mode {
-            --bg: #0A0A0A;
-            --card-bg: #1A1A1A;
+            --bg: #121212;
+            --card-bg: #1E1E1E;
             --text-primary: #E8E8E8;
             --text-secondary: #707070;
             --border: rgba(255,255,255,0.08);
-            --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
-            --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
+            --shadow-sm: 0 2px 12px rgba(0,0,0,0.4);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.6);
+            --shadow-lg: 0 16px 48px rgba(0,0,0,0.8);
+            --highlight-bg: rgba(255, 235, 59, 0.3);
         }
 
         body {
@@ -112,23 +114,6 @@
             transform: translateX(-50%) scale(0.95);
         }
 
-        .logo.morphing {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 416px;
-            background: var(--card-bg);
-            border-radius: 28px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 150;
-        }
-
         /* Search */
         .search-container {
             position: fixed;
@@ -170,7 +155,7 @@
         /* Deck Container */
         .deck-container {
             position: fixed;
-            top: calc(50% - 34px);
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: min(304px, calc((100vw - 40px) * 0.8));
@@ -178,6 +163,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-top: -20px;
         }
 
         .card-deck {
@@ -189,8 +175,8 @@
         /* Card */
         .card {
             position: absolute;
-            left: 50%;
-            top: 50%;
+            left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
             background: var(--card-bg);
@@ -202,8 +188,13 @@
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: grab;
             touch-action: none;
-            transform-origin: 50% 50%;
-            will-change: transform;
+            will-change: transform, opacity;
+            --drag-x: 0px;
+            --drag-y: 0px;
+        }
+
+        body.dark-mode .card {
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .card:active {
@@ -212,37 +203,37 @@
 
         .card.center {
             z-index: 10;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(var(--drag-x), var(--drag-y)) rotate(calc(var(--drag-x) * 0.02deg));
             opacity: 1;
             filter: blur(0);
         }
 
         .card.left-1 {
             z-index: 9;
-            transform: translate(calc(-50% - 35px), -50%) scale(0.94) rotateY(5deg);
+            transform: translateX(-35px) scale(0.94) rotateY(5deg);
             opacity: 0.5;
-            filter: blur(1px);
+            filter: blur(1px) brightness(0.8);
         }
 
         .card.left-2 {
             z-index: 8;
-            transform: translate(calc(-50% - 60px), -50%) scale(0.88) rotateY(8deg);
+            transform: translateX(-60px) scale(0.88) rotateY(8deg);
             opacity: 0.25;
-            filter: blur(2px);
+            filter: blur(2px) brightness(0.7);
         }
 
         .card.right-1 {
             z-index: 9;
-            transform: translate(calc(-50% + 35px), -50%) scale(0.94) rotateY(-5deg);
+            transform: translateX(35px) scale(0.94) rotateY(-5deg);
             opacity: 0.5;
-            filter: blur(1px);
+            filter: blur(1px) brightness(0.8);
         }
 
         .card.right-2 {
             z-index: 8;
-            transform: translate(calc(-50% + 60px), -50%) scale(0.88) rotateY(-8deg);
+            transform: translateX(60px) scale(0.88) rotateY(-8deg);
             opacity: 0.25;
-            filter: blur(2px);
+            filter: blur(2px) brightness(0.7);
         }
 
         .card-top {
@@ -268,6 +259,16 @@
         .fav-star {
             font-size: 16px;
             line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fav-star svg {
+            width: 16px;
+            height: 16px;
+            fill: #FFD60A;
+            stroke: none;
         }
 
         .edit-trigger {
@@ -314,6 +315,12 @@
             display: none;
         }
 
+        .highlight {
+            background: var(--highlight-bg);
+            padding: 2px 0;
+            border-radius: 3px;
+        }
+
         .card.editing textarea {
             width: 100%;
             height: 100%;
@@ -349,7 +356,7 @@
             border-radius: 16px;
             border: none;
             background: var(--accent);
-            color: white;
+            color: rgba(0,0,0,0.85);
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
@@ -365,7 +372,7 @@
         /* Counter */
         .card-counter {
             position: fixed;
-            top: calc(50% + min(208px, calc((100vh - 280px) * 0.8 / 2)) + 20px);
+            top: calc(50% + min(208px, calc((100vh - 280px) * 0.8 / 2)) + 30px);
             left: 50%;
             transform: translateX(-50%);
             font-size: 13px;
@@ -377,6 +384,31 @@
 
         .card-counter .current {
             color: var(--accent);
+        }
+
+        /* Swipe Hint */
+        .swipe-hint {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom) + 110px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .swipe-hint.show {
+            opacity: 1;
+            animation: subtlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
 
         /* Folder Section */
@@ -407,6 +439,10 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             flex-shrink: 0;
+        }
+
+        body.dark-mode .f-btn {
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .f-btn:active {
@@ -456,6 +492,10 @@
             white-space: nowrap;
             cursor: grab;
             border: 2px solid transparent;
+        }
+
+        body.dark-mode .folder-chip {
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         .folder-chip:active {
@@ -517,7 +557,7 @@
         }
 
         .fav-toast {
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.8);
@@ -532,7 +572,7 @@
             opacity: 0;
             pointer-events: none;
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 3000;
+            z-index: 15;
             box-shadow: var(--shadow-lg);
         }
 
@@ -548,7 +588,8 @@
         .fav-toast svg {
             width: 44px;
             height: 44px;
-            color: #FFD60A;
+            fill: #FFD60A;
+            stroke: none;
         }
 
         .undo-bar {
@@ -648,14 +689,14 @@
         .palette-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 24px;
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
         .color-dot {
             aspect-ratio: 1;
-            border-radius: 12px;
-            border: 3px solid transparent;
+            border-radius: 10px;
+            border: 2px solid transparent;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -668,6 +709,104 @@
             border-color: var(--text-primary);
             transform: scale(1.1);
             box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 5px var(--text-primary);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: var(--bg);
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        .folder-stats {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .folder-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 12px;
+        }
+
+        .folder-stat-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .folder-stat-count {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Settings Buttons Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .settings-btn {
+            height: 70px;
+            border: none;
+            background: var(--bg);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border);
+        }
+
+        .settings-btn:active {
+            transform: scale(0.95);
+        }
+
+        .settings-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-primary);
+            stroke-width: 2;
+        }
+
+        .settings-btn-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .btn-main {
@@ -735,20 +874,30 @@
             transform: scale(0.9);
         }
 
-        .delete-btn {
+        .delete-icon-btn {
+            width: 36px;
+            height: 36px;
             border: none;
-            background: none;
-            color: #FF3B30;
-            font-weight: 700;
-            font-size: 13px;
-            padding: 8px 12px;
+            background: transparent;
+            color: #FF6B6B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
 
-        .delete-btn:active {
-            background: rgba(255, 59, 48, 0.1);
+        .delete-icon-btn:active {
+            background: rgba(255, 107, 107, 0.1);
+            transform: scale(0.9);
+        }
+
+        .delete-icon-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
         }
 
         /* Empty State */
@@ -761,6 +910,23 @@
             color: var(--text-secondary);
             font-size: 14px;
             font-weight: 500;
+            white-space: pre-line;
+        }
+
+        /* Card Creation Animation */
+        .card.creating {
+            animation: cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes cardPop {
+            from {
+                opacity: 0;
+                transform: scale(0.7);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* Responsive */
@@ -825,12 +991,14 @@
     </header>
 
     <main class="deck-container">
-        <div class="card-deck" id="cardDeck"></div>
+        <div class="card-deck" id="cardDeck">
+            <div class="fav-toast" id="favToast"></div>
+        </div>
     </main>
     
     <div class="card-counter" id="cardCounter"><span class="current">00</span> / 00</div>
+    <div class="swipe-hint" id="swipeHint">← 스와이프하여 탐색 →</div>
 
-    <div class="fav-toast" id="favToast"></div>
     <div class="toast" id="toast"></div>
     <div class="undo-bar" id="undoBar">
         <span>삭제되었습니다</span>
@@ -872,12 +1040,66 @@
         <div class="modal-header">
             <div class="modal-title">설정</div>
         </div>
+        
+        <!-- 통계 섹션 -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">전체</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statFav">0</div>
+                    <div class="stat-label">즐겨찾기</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statFolders">0</div>
+                    <div class="stat-label">폴더</div>
+                </div>
+            </div>
+            <div class="folder-stats" id="folderStats"></div>
+        </div>
+
         <div id="colorPalette" class="palette-grid"></div>
-        <button onclick="toggleDarkMode()" class="btn-main btn-secondary">다크모드 전환</button>
-        <button onclick="exportAsText()" class="btn-main">텍스트로 저장</button>
-        <div style="height: 20px;"></div>
-        <button onclick="exportData()" class="btn-main btn-secondary">데이터 내보내기</button>
-        <button onclick="importData()" class="btn-main btn-secondary">데이터 가져오기</button>
+        
+        <div class="settings-grid">
+            <button class="settings-btn" onclick="toggleDarkMode()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <span class="settings-btn-label">다크모드</span>
+            </button>
+            
+            <button class="settings-btn" onclick="exportAsText()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span class="settings-btn-label">텍스트 저장</span>
+            </button>
+            
+            <button class="settings-btn" onclick="exportData()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span class="settings-btn-label">내보내기</span>
+            </button>
+            
+            <button class="settings-btn" onclick="importData()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span class="settings-btn-label">가져오기</span>
+            </button>
+        </div>
+        
         <input type="file" id="importFile" accept=".json" style="display:none;" onchange="handleImport(event)">
     </div>
 
@@ -892,7 +1114,7 @@
         let currentFolderIdx = 0;
         let isStoreMode = false;
         let isDragging = false;
-        let startX, startY, currentX = 0, currentY = 0, dragTime;
+        let startX, startY;
         let searchTerm = "";
         let selectedFolderToEdit = null;
         let lastDeletedIdea = null;
@@ -900,12 +1122,14 @@
 
         const vividColors = ['#FF3B30', '#FF9500', '#34C759', '#007AFF', '#AF52DE'];
         const pastelColors = ['#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA', '#E0BBE4'];
-        const allColors = [...vividColors, ...pastelColors];
+        const gradientColors = ['#FF6B9D', '#C471ED', '#12D8FA', '#F093FB', '#4FACFE'];
+        const allColors = [...vividColors, ...pastelColors, ...gradientColors];
 
         const icons = {
-            starF: `⭐`,
-            starO: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-            edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`
+            starFilled: `<svg viewBox="0 0 24 24" fill="#FFD60A" stroke="none"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            starOutline: `<svg viewBox="0 0 24 24" fill="none" stroke="#9E9E9E" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`,
+            trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
         };
 
         function init() {
@@ -915,6 +1139,20 @@
             renderPalettes();
             setupLogoAction();
             setupSearchKeyboard();
+            updateStats();
+            showSwipeHintOnFirstRun();
+        }
+
+        function showSwipeHintOnFirstRun() {
+            const hasSeenHint = localStorage.getItem('pongdum_hint_seen');
+            if (!hasSeenHint && ideas.length > 0) {
+                const hint = document.getElementById('swipeHint');
+                hint.classList.add('show');
+                setTimeout(() => {
+                    hint.classList.remove('show');
+                    localStorage.setItem('pongdum_hint_seen', 'true');
+                }, 3000);
+            }
         }
 
         function loadData() {
@@ -937,17 +1175,32 @@
             const deck = document.getElementById('cardDeck');
             const filtered = getFilteredIdeas();
             
-            deck.innerHTML = filtered.length === 0 
-                ? `<div class="empty-state">${isStoreMode ? '분류할 카드가 없습니다' : 'PONGDUM을 아래로 드래그하여\n첫 아이디어를 추가하세요'}</div>`
-                : '';
-
-            const offsets = [-2, -1, 0, 1, 2];
-            offsets.forEach(off => {
-                const idx = currentIndex + off;
-                if (idx >= 0 && idx < filtered.length) {
-                    deck.appendChild(createCard(filtered[idx], off));
-                }
-            });
+            // favToast 보존
+            let favToast = deck.querySelector('#favToast');
+            if (!favToast) {
+                favToast = document.createElement('div');
+                favToast.className = 'fav-toast';
+                favToast.id = 'favToast';
+            }
+            
+            deck.innerHTML = '';
+            deck.appendChild(favToast);
+            
+            if (filtered.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-state';
+                empty.textContent = isStoreMode ? '분류할 카드가 없습니다' : 'PONGDUM을 아래로 드래그하여\n첫 아이디어를 추가하세요';
+                deck.appendChild(empty);
+            } else {
+                const offsets = [-2, -1, 0, 1, 2];
+                offsets.forEach(off => {
+                    const idx = (currentIndex + off + filtered.length) % filtered.length;
+                    if (filtered.length > 0) {
+                        deck.appendChild(createCard(filtered[idx], off));
+                    }
+                });
+            }
+            
             updateCounter();
         }
 
@@ -961,17 +1214,23 @@
             const dotColor = f ? f.color : '#9E9E9E';
             const date = new Date(idea.createdAt);
             
+            let contentHTML = idea.content;
+            if (searchTerm && offset === 0) {
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                contentHTML = contentHTML.replace(regex, '<span class="highlight">$1</span>');
+            }
+            
             card.innerHTML = `
                 <div class="card-top">
                     <div class="card-indicators">
                         <div class="folder-dot" style="background:${dotColor}; display:${idea.folder==='uncategorized'?'none':'block'}"></div>
-                        ${idea.favorite ? `<span class="fav-star">${icons.starF}</span>` : ''}
+                        ${idea.favorite ? `<span class="fav-star">${icons.starFilled}</span>` : ''}
                     </div>
                     <button class="edit-trigger" onclick="event.stopPropagation(); startEdit(${idea.id});">
                         ${icons.edit}
                     </button>
                 </div>
-                <div class="card-content">${idea.content}</div>
+                <div class="card-content">${contentHTML}</div>
                 <div class="card-time">${date.getMonth()+1}월 ${date.getDate()}일</div>
             `;
             
@@ -1014,7 +1273,6 @@
             if (e.target.closest('.edit-trigger')) return;
             
             isDragging = true;
-            dragTime = Date.now();
             const pt = e.touches ? e.touches[0] : e;
             startX = pt.clientX;
             startY = pt.clientY;
@@ -1024,21 +1282,19 @@
                 me.preventDefault();
                 
                 const mpt = me.touches ? me.touches[0] : me;
-                currentX = mpt.clientX - startX;
-                currentY = mpt.clientY - startY;
+                const dragX = mpt.clientX - startX;
+                const dragY = mpt.clientY - startY;
                 
-                const rotation = currentX * 0.02;
-                const centerTransform = card.classList.contains('center') ? 'translate(-50%, -50%)' : '';
-                card.style.transition = 'none';
-                card.style.transform = `${centerTransform} translate(${currentX}px, ${currentY}px) rotate(${rotation}deg)`;
+                card.style.setProperty('--drag-x', `${dragX}px`);
+                card.style.setProperty('--drag-y', `${dragY}px`);
                 
                 const t = document.getElementById('toast');
-                if (Math.abs(currentY) > 80) {
+                if (Math.abs(dragY) > 80) {
                     const displayFolders = isStoreMode 
                         ? folders.filter(f => !f.locked && f.id !== 'uncategorized') 
                         : folders;
                     const f = displayFolders[currentFolderIdx];
-                    t.textContent = currentY < 0 
+                    t.textContent = dragY < 0 
                         ? '🗑️ 삭제' 
                         : (isStoreMode ? `💾 ${f.name}에 저장` : (!folders[currentFolderIdx].locked ? '↩️ 미분류' : '💾 저장'));
                     t.classList.add('show');
@@ -1055,16 +1311,19 @@
                 
                 document.getElementById('toast').classList.remove('show');
                 
-                const duration = Date.now() - dragTime;
+                const dragX = parseFloat(card.style.getPropertyValue('--drag-x')) || 0;
+                const dragY = parseFloat(card.style.getPropertyValue('--drag-y')) || 0;
                 
-                if (duration < 200 && Math.abs(currentX) < 10 && Math.abs(currentY) < 10) {
+                const isDragSmall = Math.abs(dragX) < 10 && Math.abs(dragY) < 10;
+                
+                if (isDragSmall) {
                     toggleFavorite(idea);
                 } else {
-                    if (Math.abs(currentX) > 120) {
-                        navigateCard(currentX > 0 ? -1 : 1);
-                    } else if (currentY < -100) {
+                    if (Math.abs(dragX) > 120) {
+                        navigateCard(dragX > 0 ? -1 : 1);
+                    } else if (dragY < -100) {
                         deleteIdea(idea);
-                    } else if (currentY > 100) {
+                    } else if (dragY > 100) {
                         const displayFolders = isStoreMode 
                             ? folders.filter(f => !f.locked && f.id !== 'uncategorized') 
                             : folders;
@@ -1080,11 +1339,9 @@
                     }
                 }
                 
-                card.style.transition = '';
-                card.style.transform = '';
+                card.style.setProperty('--drag-x', '0px');
+                card.style.setProperty('--drag-y', '0px');
                 isDragging = false;
-                currentX = 0;
-                currentY = 0;
             };
 
             document.addEventListener('mousemove', handleMove);
@@ -1134,11 +1391,11 @@
 
         function navigateCard(d) {
             const f = getFilteredIdeas();
-            const n = currentIndex + d;
-            if (n >= 0 && n < f.length) {
-                currentIndex = n;
-                renderCards();
-            }
+            if (f.length === 0) return;
+            
+            const newIndex = (currentIndex + d + f.length) % f.length;
+            currentIndex = newIndex;
+            renderCards();
         }
 
         function toggleStoreMode() {
@@ -1178,28 +1435,17 @@
 
         function toggleFavorite(idea) {
             idea.favorite = !idea.favorite;
+            saveData();
             
+            // 즐겨찾기 토스트 표시
             const favT = document.getElementById('favToast');
-            favT.innerHTML = idea.favorite ? icons.starF : icons.starO;
+            favT.innerHTML = idea.favorite ? icons.starFilled : icons.starOutline;
             favT.classList.add('show');
             setTimeout(() => favT.classList.remove('show'), 600);
             
-            saveData();
-            
-            const card = document.querySelector(`.card[data-idea-id="${idea.id}"]`);
-            if (card) {
-                const indicators = card.querySelector('.card-indicators');
-                const existingStar = indicators.querySelector('.fav-star');
-                
-                if (idea.favorite && !existingStar) {
-                    const star = document.createElement('span');
-                    star.className = 'fav-star';
-                    star.innerHTML = icons.starF;
-                    indicators.appendChild(star);
-                } else if (!idea.favorite && existingStar) {
-                    existingStar.remove();
-                }
-            }
+            // 카드 다시 렌더링
+            renderCards();
+            updateStats();
         }
 
         function deleteIdea(idea) {
@@ -1207,6 +1453,7 @@
             ideas = ideas.filter(i => i.id !== idea.id);
             saveData();
             renderCards();
+            updateStats();
             
             const bar = document.getElementById('undoBar');
             bar.classList.add('show');
@@ -1225,12 +1472,23 @@
                 document.getElementById('undoBar').classList.remove('show');
                 saveData();
                 renderCards();
+                updateStats();
             }
         }
 
         function startEdit(id) {
             const idea = ideas.find(i => i.id === id);
+            if (!idea) return;
+            
             const deck = document.getElementById('cardDeck');
+            
+            // favToast 보존
+            let favToast = deck.querySelector('#favToast');
+            if (!favToast) {
+                favToast = document.createElement('div');
+                favToast.className = 'fav-toast';
+                favToast.id = 'favToast';
+            }
             
             deck.innerHTML = `
                 <div class="card center editing">
@@ -1241,29 +1499,33 @@
                 </div>
             `;
             
-            setTimeout(() => document.getElementById('editArea').focus(), 100);
+            deck.appendChild(favToast);
+            
+            setTimeout(() => {
+                const area = document.getElementById('editArea');
+                if (area) area.focus();
+            }, 100);
         }
 
         function finishEdit(id) {
             const val = document.getElementById('editArea').value.trim();
             if (val) {
-                ideas.find(i => i.id === id).content = val;
+                const idea = ideas.find(i => i.id === id);
+                idea.content = val;
                 saveData();
-                renderCards();
             }
+            renderCards();
         }
 
         function setupLogoAction() {
             const logo = document.getElementById('mainLogo');
-            let lStartX, lStartY, lStartTop, isLogoActive = false;
+            let lStartX, lStartY, isLogoActive = false;
             const maxDragY = window.innerHeight / 2 - 34 - (416 * 0.8 / 2) - 60;
 
             logo.onmousedown = logo.ontouchstart = (e) => {
                 const pt = e.touches ? e.touches[0] : e;
                 lStartX = pt.clientX;
                 lStartY = pt.clientY;
-                const rect = logo.getBoundingClientRect();
-                lStartTop = rect.top;
                 isLogoActive = true;
             };
 
@@ -1284,8 +1546,11 @@
                 const pt = e.changedTouches ? e.changedTouches[0] : e;
                 const diffY = pt.clientY - lStartY;
                 
+                logo.style.transform = 'translateX(-50%)';
+                logo.classList.remove('dragging');
+                
                 if (diffY > 60) {
-                    morphLogoToCard();
+                    createNewCard();
                 } else if (Math.abs(diffY) < 10) {
                     currentFolderIdx = 0;
                     currentIndex = 0;
@@ -1293,8 +1558,6 @@
                     renderCards();
                 }
                 
-                logo.style.transform = 'translateX(-50%)';
-                logo.classList.remove('dragging');
                 isLogoActive = false;
             };
 
@@ -1304,34 +1567,25 @@
             window.addEventListener('touchend', handleEnd);
         }
 
-        function morphLogoToCard() {
-            const logo = document.getElementById('mainLogo');
+        function createNewCard() {
             const displayFolders = isStoreMode 
                 ? folders.filter(f => !f.locked && f.id !== 'uncategorized') 
                 : folders;
             const currentF = displayFolders[currentFolderIdx];
             const initF = (!currentF.locked) ? currentF.id : 'uncategorized';
             
-            logo.classList.add('morphing');
+            const n = {
+                id: Date.now(),
+                content: '',
+                folder: initF,
+                favorite: false,
+                createdAt: new Date().toISOString()
+            };
+            ideas.unshift(n);
+            currentIndex = 0;
+            saveData();
             
-            setTimeout(() => {
-                logo.classList.remove('morphing');
-                logo.style.transform = 'translateX(-50%)';
-                
-                const n = {
-                    id: Date.now(),
-                    content: '',
-                    folder: initF,
-                    favorite: false,
-                    createdAt: new Date().toISOString()
-                };
-                ideas.unshift(n);
-                currentIndex = 0;
-                saveData();
-                renderCards();
-                
-                setTimeout(() => startEdit(n.id), 100);
-            }, 600);
+            setTimeout(() => startEdit(n.id), 100);
         }
 
         function renderPalettes() {
@@ -1373,7 +1627,7 @@
                 <div class="folder-item ${selectedFolderToEdit===f.id?'selected':''}" onclick="selectedFolderToEdit='${f.id}'; renderFolderList();">
                     <div class="folder-color-btn" style="background:${f.color}"></div>
                     <input type="text" value="${f.name}" onchange="updateFolderName('${f.id}', this.value)" onclick="event.stopPropagation();">
-                    ${f.id !== 'uncategorized' ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteFolder('${f.id}')">삭제</button>` : ''}
+                    ${f.id !== 'uncategorized' ? `<button class="delete-icon-btn" onclick="event.stopPropagation(); deleteFolder('${f.id}')">${icons.trash}</button>` : ''}
                 </div>
             `).join('');
         }
@@ -1388,12 +1642,13 @@
             folders.push({
                 id: 'f' + Date.now(),
                 name: '새 폴더',
-                color: vividColors[Math.floor(Math.random() * vividColors.length)],
+                color: allColors[Math.floor(Math.random() * allColors.length)],
                 locked: false
             });
             saveData();
             renderFolderList();
             renderFolders();
+            updateStats();
         }
 
         function deleteFolder(id) {
@@ -1415,7 +1670,28 @@
                 renderFolderList();
                 renderFolders();
                 renderCards();
+                updateStats();
             }
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = ideas.length;
+            document.getElementById('statFav').textContent = ideas.filter(i => i.favorite).length;
+            document.getElementById('statFolders').textContent = folders.filter(f => !f.locked).length;
+            
+            const folderStats = document.getElementById('folderStats');
+            folderStats.innerHTML = folders.filter(f => !f.locked).map(f => {
+                const count = ideas.filter(i => i.folder === f.id).length;
+                return `
+                    <div class="folder-stat-item">
+                        <div class="folder-stat-name">
+                            <span class="folder-chip-dot" style="background:${f.color}"></span>
+                            <span>${f.name}</span>
+                        </div>
+                        <span class="folder-stat-count">${count}개</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function openMenu() {
@@ -1426,6 +1702,7 @@
         }
 
         function openSettings() {
+            updateStats();
             document.getElementById('overlay').classList.add('show');
             document.getElementById('settingsModal').classList.add('show');
         }
@@ -1545,6 +1822,7 @@
                         currentFolderIdx = 0;
                         renderFolders();
                         renderCards();
+                        updateStats();
                         showToast('데이터 가져오기 완료');
                         closeAllModals();
                     }
